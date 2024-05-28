@@ -1,0 +1,8 @@
+#chessboard {
+  display: grid;
+  grid-template-columns: repeat(8, calc(var(--chessboardSide) / 8));
+  grid-template-rows: repeat(8, calc(var(--chessboardSide) / 8));
+  width: var(--chessboardSide);
+  height: var(--chessboardSide);
+  background-color: blue;
+}
