@@ -126,7 +126,7 @@ export default function Referee() {
   }
 
   return (
-    <>
+    <div id="board">
       <p className="total-turns">{board.totalTurns}</p>
       <div id="check-mate-modal" className="hidden" ref={checkmateModalRef}>
         <div className="modal-body">
@@ -157,6 +157,6 @@ export default function Referee() {
         </div>
       </div>
       <Chessboard playMove={playMove} pieces={board.pieces} />
-    </>
+    </div>
   );
 }
