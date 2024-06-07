@@ -260,7 +260,6 @@ export default function SignUp() {
               <CircularProgress
                 size={24}
                 sx={{
-                  // color: green[500],
                   position: "absolute",
                   top: "50%",
                   left: "50%",
