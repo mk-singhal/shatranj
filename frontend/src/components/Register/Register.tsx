@@ -12,48 +12,29 @@ import CircularProgress from "@mui/material/CircularProgress";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import axios from "../../api/axios.ts";
+import Alert from "@mui/material/Alert";
 
-export default function SignUp() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const firstName = data.get("firstName");
-    firstName ? "" : setFirstNameError("Required");
-    const lastName = data.get("lastName");
-    lastName ? "" : setLastNameError("Required");
-    const email = data.get("email");
-    email ? "" : setEmailError("Required");
-    const password = data.get("password");
-    password ? "" : setPasswordError("Required");
-    const confirmPassword = data.get("confirmPassword");
-    confirmPassword ? "" : setConfirmPasswordError("Required");
+const REGISTER_URL = "register";
+type AlertHTML = {
+  severity: any;
+  message: string;
+};
 
-    if (!firstName || !lastName || !email || !password || !confirmPassword)
-      return;
-    if (!loading) {
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-      }, 10000);
-    }
-    console.log({
-      firstName: data.get("firstName"),
-      lastName: data.get("lastName"),
-      email: data.get("email"),
-      password: data.get("password"),
-      confirmPassword: data.get("confirmPassword"),
-    });
-  };
-
+export default function Register() {
   const password = React.useRef<HTMLInputElement | null>(null);
+
   const [firstNameError, setFirstNameError] = React.useState("");
-  const [lastNameError, setLastNameError] = React.useState("");
+  const [lastNameError, setLastNameError] = React.useState<string>("");
   const [emailError, setEmailError] = React.useState("");
   const [passwordError, setPasswordError] = React.useState("");
   const [confirmPasswordError, setConfirmPasswordError] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
+
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+
+  const [loading, setLoading] = React.useState(false);
+  const [alert, setAlert] = React.useState<AlertHTML | null>();
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
   const handleClickShowConfirmPassword = () =>
@@ -101,7 +82,6 @@ export default function SignUp() {
       setPasswordError("");
     }
   };
-
   const handleConfirmPasswordChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -115,8 +95,92 @@ export default function SignUp() {
     }
   };
 
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const firstName = data.get("firstName");
+    if (!firstName) {
+      setFirstNameError("Required");
+      return;
+    }
+    const lastName = data.get("lastName");
+    if (!lastName) {
+      setLastNameError("Required");
+      return;
+    }
+    const email = data.get("email");
+    if (!email) {
+      setEmailError("Required");
+      return;
+    }
+    const password = data.get("password");
+    if (!password) {
+      setPasswordError("Required");
+      return;
+    }
+    const confirmPassword = data.get("confirmPassword");
+    if (!confirmPassword) {
+      setConfirmPasswordError("Required");
+      return;
+    } else if (password !== confirmPassword) {
+      setConfirmPasswordError("Passwords do not match");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await axios.post(
+        REGISTER_URL,
+        JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          password,
+        }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      console.log(res.data);
+      // console.log(res.accessToken);
+      if (res.data && res.data.success)
+        setAlert({ severity: "success", message: res.data.success });
+    } catch (error: any) {
+      if (!error?.response) {
+        setAlert({ severity: "error", message: "No Server Response" });
+        console.log("No Server Response");
+      } else if (error.response?.status === 409) {
+        setAlert({ severity: "error", message: "Email already registered" });
+        console.log("Email already registered");
+      } else {
+        setAlert({ severity: "error", message: "Registeration Failed" });
+        console.log("Registeration Failed");
+      }
+    } finally {
+      setTimeout(() => {
+        setAlert(null);
+      }, 3000);
+      setLoading(false);
+    }
+  };
+
   return (
-    <Container component="main" maxWidth="xs">
+    <Container
+      component="main"
+      maxWidth="xs"
+      sx={{
+        height: {
+          xs: "calc(100vh - 56px)",
+          sm: "calc(100vh - 64px)",
+          md: "100vh",
+        },
+        alignContent: "center",
+      }}
+    >
       <Box
         sx={{
           display: "flex",
@@ -128,8 +192,16 @@ export default function SignUp() {
           <LockOutlinedIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
-          Sign up
+          Register
         </Typography>
+        {alert && (
+          <Alert
+            sx={{ marginTop: 2 }}
+            severity={alert.severity == "success" ? "success" : "error"}
+          >
+            {alert.message}
+          </Alert>
+        )}
         <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
@@ -255,7 +327,7 @@ export default function SignUp() {
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
-            Sign Up
+            Register
             {loading && (
               <CircularProgress
                 size={24}
@@ -273,7 +345,7 @@ export default function SignUp() {
           <Grid container justifyContent="flex-end">
             <Grid item>
               <Link href="login" variant="body2">
-                Already have an account? Sign in
+                Already have an account? Login
               </Link>
             </Grid>
           </Grid>

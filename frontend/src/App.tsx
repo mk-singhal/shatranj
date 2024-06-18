@@ -1,27 +1,30 @@
 import "./App.css";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Navbar from "./components/Navbar/Navbar";
-import Referee from "./components/Refree/Refree";
-import HomePage from "./components/HomePage/HomePage";
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { deepOrange, grey } from '@mui/material/colors';
-import { PaletteMode } from '@mui/material';
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import CssBaseline from "@mui/material/CssBaseline";
+import Refree from "./components/Refree/Refree";
+import HomePage from "./components/HomePage/HomePage";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { deepOrange, grey } from "@mui/material/colors";
+import { PaletteMode } from "@mui/material";
 import Box from "@mui/material/Box";
-import SignIn from "./components/Signin/Signin";
-import SignUp from "./components/Signup/Signup";
+import Login from "./components/Login/Login";
+import Register from "./components/Register/Register";
+import RequireAuth from "./components/RequireAuth/RequireAuth";
+import PersistLogin from "./components/PersistLogin/PersistLogin";
+import Layout from "./components/Layout/Layout";
+import Missing from "./components/Missing/Missing";
 
 const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
     mode,
-    ...(mode === 'light'
+    ...(mode === "light"
       ? {
           // palette values for light mode
-          primary: {main: '#60350b'},
+          primary: { main: "#60350b" },
           // divider: '#ff8f00',
           background: {
-            default: '#ffffff',
-            navbar: '#faebd7',
+            default: "#ffffff",
+            navbar: "#faebd7",
           },
           text: {
             primary: grey[900],
@@ -37,7 +40,7 @@ const getDesignTokens = (mode: PaletteMode) => ({
             paper: deepOrange[900],
           },
           text: {
-            primary: '#fff',
+            primary: "#fff",
             secondary: grey[500],
           },
         }),
@@ -45,23 +48,31 @@ const getDesignTokens = (mode: PaletteMode) => ({
 });
 
 function App() {
-  const router = createBrowserRouter([
-    { path: "/", element: <HomePage /> },
-    { path: "/login", element: <SignIn /> },
-    { path: "/signup", element: <SignUp /> },
-    { path: "/game", element: <Referee /> },
-  ]);
-
-  const darkModeTheme = createTheme(getDesignTokens('light'));
+  const darkModeTheme = createTheme(getDesignTokens("light"));
 
   return (
     <ThemeProvider theme={darkModeTheme}>
+      <CssBaseline />
       <Box sx={{ width: "100%", display: "flex" }}>
-        <CssBaseline />
-        <Navbar />
-        <RouterProvider router={router} />
+        <BrowserRouter>
+          <Routes>
+            <Route element={<PersistLogin />}>
+              <Route path="/" element={<Layout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                {/* Protected Routes */}
+                <Route element={<RequireAuth />}>
+                  <Route path="/game" element={<Refree />} />
+                </Route>
+                {/* Catch all */}
+                <Route path="*" element={<Missing />} />
+              </Route>
+            </Route>
+          </Routes>
+        </BrowserRouter>
       </Box>
-    </ThemeProvider>    
+    </ThemeProvider>
   );
 }
 

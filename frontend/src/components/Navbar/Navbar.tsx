@@ -9,7 +9,6 @@ import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import AccountCircle from "@mui/icons-material/AccountCircle";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -17,7 +16,10 @@ import ListItemText from "@mui/material/ListItemText";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
-import { Link } from "@mui/material";
+import Link from "@mui/material/Link";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import AuthContext from "../../context/AuthProvider";
+import useLogout from "../../hooks/useLogout";
 
 const drawerWidth = 240;
 
@@ -83,10 +85,13 @@ const Drawer = styled(MuiDrawer, {
 
 export default function Navbar() {
   const theme = useTheme();
+  const { auth } = React.useContext(AuthContext);
   const [profileAnchorEl, setProfileAnchorEl] =
     React.useState<null | HTMLElement>(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);
+  const navigate = useNavigate();
+  const logout = useLogout();
 
   const handleDrawerClose = () => {
     setIsClosing(true);
@@ -111,6 +116,11 @@ export default function Navbar() {
     setProfileAnchorEl(null);
   };
 
+  const signOut = async () => {
+    await logout();
+    navigate("/");
+  };
+
   const drawer = (
     <Box
       sx={{
@@ -118,17 +128,19 @@ export default function Navbar() {
         display: "flex",
         flexDirection: "column",
         height: "100%",
+        marginTop: { xs: "56px", sm: "64px", md: 0 },
       }}
     >
       <Box sx={{ display: "block", flexDirection: "column" }}>
         <Link
-          href="/"
+          component={RouterLink}
+          to="/"
           underline="none"
           sx={{
             width: "100%",
-            display: "flex",
             padding: 1,
             minHeight: 48,
+            display: { xs: "none", md: "flex" },
             justifyContent: {
               md: "center",
               lg: "initial",
@@ -151,18 +163,19 @@ export default function Navbar() {
           </Typography>
         </Link>
       </Box>
-      {/* </Box> */}
       <Divider />
       <List sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
         {[
-          ["You vs Others", "assets/friend.svg"],
-          ["You vs AI", "assets/brain.svg"],
-          ["Blogs", "assets/globe.svg"],
-          ["Settings", "assets/settings.svg"],
+          ["You vs Others", "assets/friend.svg", "/you-vs-others"],
+          ["You vs AI", "assets/brain.svg", "/you-vs-ai"],
+          ["Blogs", "assets/globe.svg", "/blogs"],
+          ["Settings", "assets/settings.svg", "/game"],
         ].map((text) => (
           <ListItem key={text[0]} disablePadding sx={{ display: "block" }}>
             <ListItemButton
-              href={`${text[0].toLowerCase()}`}
+              component={RouterLink}
+              to={text[2]}
+              // href={`${text[0].toLowerCase()}`}
               sx={{
                 minHeight: 48,
                 justifyContent: {
@@ -196,21 +209,80 @@ export default function Navbar() {
       <List
         sx={{ flexDirection: "column", display: { xs: "none", md: "flex" } }}
       >
-        {(false
-          ? [
-              [
-                "Profile",
-                `assets/no-profile/profile${Math.floor(
-                  Math.random() * 13 + 1
-                )}.svg`,
-              ],
-              ["Logout", "assets/logout.svg"],
-            ]
-          : [["Login", "assets/login.svg"]]
-        ).map((text) => (
-          <ListItem key={text[0]} disablePadding sx={{ display: "block" }}>
+        {auth ? (
+          <>
+            <ListItem key="Profile" disablePadding sx={{ display: "block" }}>
+              <ListItemButton
+                component={RouterLink}
+                to="/profile"
+                // { ..."Profile"== "Logout" ? {onclick=signOut} : {to}=text[2]) }
+                sx={{
+                  minHeight: 48,
+                  justifyContent: {
+                    xs: "initial",
+                    md: "center",
+                    lg: "initial",
+                  },
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: { xs: 1, md: "auto", lg: 3 },
+                    justifyContent: "center",
+                  }}
+                >
+                  <img src="assets/no-profile/profile1.svg" width={28} />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Profile"
+                  sx={{
+                    opacity: { md: 0, lg: 1 },
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+            <ListItem key="Logout" disablePadding sx={{ display: "block" }}>
+              <ListItemButton
+                // component={RouterLink}
+                // to="/profile"
+                onClick={signOut}
+                // { ..."Profile"== "Logout" ? {onclick=signOut} : {to}=text[2]) }
+                sx={{
+                  minHeight: 48,
+                  justifyContent: {
+                    xs: "initial",
+                    md: "center",
+                    lg: "initial",
+                  },
+                  px: 2.5,
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    minWidth: 0,
+                    mr: { xs: 1, md: "auto", lg: 3 },
+                    justifyContent: "center",
+                  }}
+                >
+                  <img src="assets/logout.svg" width={28} />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Logout"
+                  sx={{
+                    opacity: { md: 0, lg: 1 },
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          </>
+        ) : (
+          <ListItem key="Login" disablePadding sx={{ display: "block" }}>
             <ListItemButton
-              href={`${text[0].toLowerCase()}`}
+              component={RouterLink}
+              to="/login"
+              // { ..."Profile"== "Logout" ? {onclick=signOut} : {to}=text[2]) }
               sx={{
                 minHeight: 48,
                 justifyContent: {
@@ -228,17 +300,17 @@ export default function Navbar() {
                   justifyContent: "center",
                 }}
               >
-                <img src={text[1]} width={28} />
+                <img src="assets/login.svg" width={28} />
               </ListItemIcon>
               <ListItemText
-                primary={text[0]}
+                primary="Login"
                 sx={{
                   opacity: { md: 0, lg: 1 },
                 }}
               />
             </ListItemButton>
           </ListItem>
-        ))}
+        )}
       </List>
     </Box>
   );
@@ -255,11 +327,11 @@ export default function Navbar() {
           <IconButton
             size="large"
             edge="start"
-            color="inherit"
             aria-label="menu"
             onClick={handleDrawerToggle}
             sx={{
               mr: 2,
+              color: "text.primary",
               ":focus": {
                 outline: "none",
               },
@@ -267,10 +339,20 @@ export default function Navbar() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography
+            variant="h6"
+            // component="div"
+            component={RouterLink}
+            to="/"
+            sx={{
+              "&:hover": { color: "text.primary" },
+              color: "text.primary",
+              flexGrow: 1,
+            }}
+          >
             Chess
           </Typography>
-          {false ? (
+          {auth ? (
             <div>
               <IconButton
                 size="large"
@@ -285,7 +367,7 @@ export default function Navbar() {
                   },
                 }}
               >
-                <AccountCircle />
+                <img src="assets/no-profile/profile1.svg" width={28} />
               </IconButton>
               <Menu
                 id="profile-menu-appbar"
@@ -302,14 +384,27 @@ export default function Navbar() {
                 open={Boolean(profileAnchorEl)}
                 onClose={handleProfileClose}
               >
-                <MenuItem onClick={handleProfileClose}>Profile</MenuItem>
-                <MenuItem onClick={handleProfileClose}>My account</MenuItem>
+                <MenuItem
+                  component={RouterLink}
+                  to="/profile"
+                  onClick={handleProfileClose}
+                >
+                  Profile
+                </MenuItem>
+                <MenuItem
+                  component={RouterLink}
+                  to="/logout"
+                  onClick={() => {handleProfileClose();signOut()}}
+                >
+                  Logout
+                </MenuItem>
               </Menu>
             </div>
           ) : (
             <div>
               <Link
-                href="/"
+                component={RouterLink}
+                to="/login"
                 underline="none"
                 sx={{
                   color: "text.primary",
