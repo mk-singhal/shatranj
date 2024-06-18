@@ -4,12 +4,43 @@ import Chessboard from "../Chessboard/Chessboard";
 import "./Refree.css";
 import { Board, Pawn, Piece, Position } from "../../models";
 import { PieceType, TeamType } from "../../Types";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard);
   const [promotionPawn, setPromotionPawn] = useState<Piece>();
   const modalRef = useRef<HTMLDivElement>(null);
   const checkmateModalRef = useRef<HTMLDivElement>(null);
+
+  const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    const getblogs = async () => {
+      try {
+        const response = await axiosPrivate.get("/my-blogs", {
+          signal: controller.signal,
+        });
+        console.log(response.data);
+        // isMounted && setBlogs(response.data);
+      } catch (error) {
+        console.log(error);
+        navigate("/login", { state: { from: location }, replace: true });
+      }
+    };
+
+    getblogs();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, []);
 
   useEffect(() => {
     board.calculateAllMoves();
@@ -126,7 +157,7 @@ export default function Referee() {
   }
 
   return (
-    <>
+    <div id="board">
       <p className="total-turns">{board.totalTurns}</p>
       <div id="check-mate-modal" className="hidden" ref={checkmateModalRef}>
         <div className="modal-body">
@@ -157,6 +188,6 @@ export default function Referee() {
         </div>
       </div>
       <Chessboard playMove={playMove} pieces={board.pieces} />
-    </>
+    </div>
   );
 }

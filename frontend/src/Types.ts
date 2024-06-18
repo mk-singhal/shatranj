@@ -1,3 +1,10 @@
+export type UserProfileType = {
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  password: string | null;
+};
+
 export enum PieceType {
   PAWN = "pawn",
   BISHOP = "bishop",
