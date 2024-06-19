@@ -14,7 +14,7 @@ const handleLogin = async (req, res) => {
   if (!foundUser) return res.sendStatus(401); //Unauthorized
   // evaluate password
   const match = await bcrypt.compare(password, foundUser.password);
-  const expRefreshToken = rememberMe ? 2 * 24 * 60 * 60 : 1 * 60;
+  const expRefreshToken = rememberMe ? 2 * 24 * 60 * 60 : 1 * 60 * 60;
 
   if (match) {
     // create JWTs
@@ -25,7 +25,7 @@ const handleLogin = async (req, res) => {
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "10s" }
+      { expiresIn: "20s" }
     );
     const refreshToken = jwt.sign(
       { email: foundUser.email },
@@ -50,7 +50,7 @@ const handleLogin = async (req, res) => {
           httpOnly: true,
           // sameSite: "None",
           // secure: true,
-          maxAge: 1 * 60 * 1000,
+          maxAge: 1 * 60 * 60 * 1000,
         });
 
     // Send authorization roles and access token to user

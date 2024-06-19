@@ -13,6 +13,7 @@ import RequireAuth from "./components/RequireAuth/RequireAuth";
 import PersistLogin from "./components/PersistLogin/PersistLogin";
 import Layout from "./components/Layout/Layout";
 import Missing from "./components/Missing/Missing";
+import Blog from "./components/Blog/Blog";
 
 const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
@@ -29,6 +30,8 @@ const getDesignTokens = (mode: PaletteMode) => ({
           text: {
             primary: grey[900],
             secondary: grey[800],
+            hover: "#C47D37",
+            navbarHover: "#8b4726",
           },
         }
       : {
@@ -61,8 +64,10 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/blog" element={<Blog />} />
                 {/* Protected Routes */}
                 <Route element={<RequireAuth />}>
+                  <Route path="/my-blog" element={<Blog />} />
                   <Route path="/game" element={<Refree />} />
                 </Route>
                 {/* Catch all */}

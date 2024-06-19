@@ -147,7 +147,7 @@ export default function Navbar() {
             },
           }}
         >
-          <img src="assets/chess.svg" width={50} />
+          <img src="/assets/chess.svg" width={50} />
           <Typography
             sx={{
               ml: 0.5,
@@ -166,10 +166,10 @@ export default function Navbar() {
       <Divider />
       <List sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}>
         {[
-          ["You vs Others", "assets/friend.svg", "/you-vs-others"],
-          ["You vs AI", "assets/brain.svg", "/you-vs-ai"],
-          ["Blogs", "assets/globe.svg", "/blogs"],
-          ["Settings", "assets/settings.svg", "/game"],
+          ["You vs Others", "/assets/friend.svg", "/you-vs-others"],
+          ["You vs AI", "/assets/brain.svg", "/you-vs-ai"],
+          ["Blogs", "/assets/globe.svg", "/blog"],
+          ["Settings", "/assets/settings.svg", "/game"],
         ].map((text) => (
           <ListItem key={text[0]} disablePadding sx={{ display: "block" }}>
             <ListItemButton
@@ -184,6 +184,9 @@ export default function Navbar() {
                   lg: "initial",
                 },
                 px: 2.5,
+                "&:hover": {
+                  color: "text.navbarHover", //"#ba9b32"
+                },
               }}
             >
               <ListItemIcon
@@ -224,6 +227,9 @@ export default function Navbar() {
                     lg: "initial",
                   },
                   px: 2.5,
+                  "&:hover": {
+                    color: "text.navbarHover", //"#ba9b32"
+                  },
                 }}
               >
                 <ListItemIcon
@@ -233,7 +239,7 @@ export default function Navbar() {
                     justifyContent: "center",
                   }}
                 >
-                  <img src="assets/no-profile/profile1.svg" width={28} />
+                  <img src="/assets/no-profile/profile1.svg" width={28} />
                 </ListItemIcon>
                 <ListItemText
                   primary="Profile"
@@ -257,6 +263,9 @@ export default function Navbar() {
                     lg: "initial",
                   },
                   px: 2.5,
+                  "&:hover": {
+                    color: "text.navbarHover", //"#ba9b32"
+                  },
                 }}
               >
                 <ListItemIcon
@@ -266,7 +275,7 @@ export default function Navbar() {
                     justifyContent: "center",
                   }}
                 >
-                  <img src="assets/logout.svg" width={28} />
+                  <img src="/assets/logout.svg" width={28} />
                 </ListItemIcon>
                 <ListItemText
                   primary="Logout"
@@ -291,6 +300,9 @@ export default function Navbar() {
                   lg: "initial",
                 },
                 px: 2.5,
+                "&:hover": {
+                  color: "text.navbarHover", //"#ba9b32"
+                },
               }}
             >
               <ListItemIcon
@@ -300,7 +312,7 @@ export default function Navbar() {
                   justifyContent: "center",
                 }}
               >
-                <img src="assets/login.svg" width={28} />
+                <img src="/assets/login.svg" width={28} />
               </ListItemIcon>
               <ListItemText
                 primary="Login"
@@ -350,7 +362,7 @@ export default function Navbar() {
               flexGrow: 1,
             }}
           >
-            Chess
+            Shatranj
           </Typography>
           {auth ? (
             <div>
@@ -367,7 +379,7 @@ export default function Navbar() {
                   },
                 }}
               >
-                <img src="assets/no-profile/profile1.svg" width={28} />
+                <img src="/assets/no-profile/profile1.svg" width={28} />
               </IconButton>
               <Menu
                 id="profile-menu-appbar"
@@ -388,13 +400,26 @@ export default function Navbar() {
                   component={RouterLink}
                   to="/profile"
                   onClick={handleProfileClose}
+                  sx={{
+                    "&:hover": {
+                      color: "text.navbarHover", //"#ba9b32"
+                    },
+                  }}
                 >
                   Profile
                 </MenuItem>
                 <MenuItem
                   component={RouterLink}
                   to="/logout"
-                  onClick={() => {handleProfileClose();signOut()}}
+                  onClick={() => {
+                    handleProfileClose();
+                    signOut();
+                  }}
+                  sx={{
+                    "&:hover": {
+                      color: "text.navbarHover", //"#ba9b32"
+                    },
+                  }}
                 >
                   Logout
                 </MenuItem>
@@ -408,6 +433,9 @@ export default function Navbar() {
                 underline="none"
                 sx={{
                   color: "text.primary",
+                  "&:hover": {
+                    color: "text.navbarHover", //"#ba9b32"
+                  },
                 }}
               >
                 Login
