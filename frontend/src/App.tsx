@@ -48,6 +48,17 @@ const getDesignTokens = (mode: PaletteMode) => ({
           },
         }),
   },
+  components: {
+    // Name of the component
+    MuiButtonBase: {
+      styleOverrides: {
+        // Name of the slot
+        root: {
+          ":focus": { outline: "none" }
+        },
+      },
+    },
+  },
 });
 
 function App() {

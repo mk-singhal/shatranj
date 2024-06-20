@@ -89,23 +89,15 @@ export default function Navbar() {
   const [profileAnchorEl, setProfileAnchorEl] =
     React.useState<null | HTMLElement>(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [isClosing, setIsClosing] = React.useState(false);
   const navigate = useNavigate();
   const logout = useLogout();
 
   const handleDrawerClose = () => {
-    setIsClosing(true);
     setMobileOpen(false);
   };
 
-  const handleDrawerTransitionEnd = () => {
-    setIsClosing(false);
-  };
-
   const handleDrawerToggle = () => {
-    if (!isClosing) {
-      setMobileOpen(!mobileOpen);
-    }
+    setMobileOpen(!mobileOpen);
   };
 
   const handleProfileMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -175,7 +167,6 @@ export default function Navbar() {
             <ListItemButton
               component={RouterLink}
               to={text[2]}
-              // href={`${text[0].toLowerCase()}`}
               sx={{
                 minHeight: 48,
                 justifyContent: {
@@ -218,7 +209,6 @@ export default function Navbar() {
               <ListItemButton
                 component={RouterLink}
                 to="/profile"
-                // { ..."Profile"== "Logout" ? {onclick=signOut} : {to}=text[2]) }
                 sx={{
                   minHeight: 48,
                   justifyContent: {
@@ -251,10 +241,7 @@ export default function Navbar() {
             </ListItem>
             <ListItem key="Logout" disablePadding sx={{ display: "block" }}>
               <ListItemButton
-                // component={RouterLink}
-                // to="/profile"
                 onClick={signOut}
-                // { ..."Profile"== "Logout" ? {onclick=signOut} : {to}=text[2]) }
                 sx={{
                   minHeight: 48,
                   justifyContent: {
@@ -291,7 +278,6 @@ export default function Navbar() {
             <ListItemButton
               component={RouterLink}
               to="/login"
-              // { ..."Profile"== "Logout" ? {onclick=signOut} : {to}=text[2]) }
               sx={{
                 minHeight: 48,
                 justifyContent: {
@@ -344,16 +330,12 @@ export default function Navbar() {
             sx={{
               mr: 2,
               color: "text.primary",
-              ":focus": {
-                outline: "none",
-              },
             }}
           >
             <MenuIcon />
           </IconButton>
           <Typography
             variant="h6"
-            // component="div"
             component={RouterLink}
             to="/"
             sx={{
@@ -373,11 +355,6 @@ export default function Navbar() {
                 aria-haspopup="true"
                 onClick={handleProfileMenu}
                 color="inherit"
-                sx={{
-                  ":focus": {
-                    outline: "none",
-                  },
-                }}
               >
                 <img src="/assets/no-profile/profile1.svg" width={28} />
               </IconButton>
@@ -445,11 +422,12 @@ export default function Navbar() {
         </Toolbar>
       </AppBar>
       <nav>
+        {/* MuiDrawer is used for mobile view */}
         <MuiDrawer
           variant="temporary"
           open={mobileOpen}
           anchor="top"
-          onTransitionEnd={handleDrawerTransitionEnd}
+          onClick={handleDrawerClose}
           onClose={handleDrawerClose}
           ModalProps={{
             keepMounted: true, // Better open performance on mobile.
@@ -463,6 +441,7 @@ export default function Navbar() {
         >
           {drawer}
         </MuiDrawer>
+        {/* MuiDrawer is used for desktop view */}
         <Drawer
           variant="permanent"
           open={useMediaQuery(theme.breakpoints.up("lg")) ? true : false}
