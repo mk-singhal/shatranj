@@ -14,6 +14,7 @@ import PersistLogin from "./components/PersistLogin/PersistLogin";
 import Layout from "./components/Layout/Layout";
 import Missing from "./components/Missing/Missing";
 import Blog from "./components/Blog/Blog";
+import BlogDetail from "./components/BlogDetail/BlogDetail";
 
 const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
@@ -110,6 +111,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:id" element={<BlogDetail />} />
                 {/* Protected Routes */}
                 <Route element={<RequireAuth />}>
                   <Route path="/my-blog" element={<Blog />} />

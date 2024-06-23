@@ -46,19 +46,17 @@ export default function ColorTabs() {
   };
 
   const [sort, setSort] = React.useState("");
-
   const handleSort = (event: SelectChangeEvent) => {
     setSort(event.target.value);
   };
 
-  const [value, setValue] = React.useState(0);
+  // const [value, setValue] = React.useState(0);
   const ref = React.useRef<HTMLDivElement>(null);
   const [messages, setMessages] = React.useState(() => refreshMessages());
-
   React.useEffect(() => {
     (ref.current as HTMLDivElement).ownerDocument.body.scrollTop = 0;
     setMessages(refreshMessages());
-  }, [value, setMessages]);
+  }, [setMessages]);
 
   const theme = useTheme();
   const targetRef = React.useRef<HTMLDivElement>(null);
@@ -177,9 +175,9 @@ export default function ColorTabs() {
             ref={ref}
           >
             {messages.map(({ primary, secondary, person }, index) => (
-              <>
+              <div key={index}>
                 <Card
-                  key={index}
+                  // key={index}
                   sx={{
                     minHeight: "15%",
                     maxHeight: "15%",
@@ -278,7 +276,7 @@ export default function ColorTabs() {
                         component="div"
                         variant="subtitle1"
                         color="text.secondary"
-                        ml={1}
+                        pl={1}
                         minWidth={{ xs: 80, sm: 100 }}
                       >
                         12345
@@ -377,7 +375,7 @@ export default function ColorTabs() {
                   />
                 </Card>
                 <Divider variant="middle" />
-              </>
+              </div>
             ))}
           </Box>
         </Grid>
