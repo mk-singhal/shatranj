@@ -18,12 +18,9 @@ import CircularProgress from "@mui/material/CircularProgress";
 import axios from "../../api/axios";
 import Alert from "@mui/material/Alert";
 import useAuth from "../../hooks/useAuth";
+import { AlertHTML } from "../../Types";
 
 const LOGIN_URL = "/login";
-type AlertHTML = {
-  severity: any;
-  message: string;
-};
 
 export default function Login() {
   const { auth, setAuth, setUser } = useAuth();

@@ -1,6 +1,7 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
+import Fab from "@mui/material/Fab";
 import Tabs from "@mui/material/Tabs";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
@@ -9,6 +10,7 @@ import Stack from "@mui/material/Stack";
 import Divider from "@mui/material/Divider";
 import SvgIcon from "@mui/material/SvgIcon";
 import MenuItem from "@mui/material/MenuItem";
+import AddIcon from '@mui/icons-material/Add';
 import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
@@ -380,6 +382,13 @@ export default function ColorTabs() {
           </Box>
         </Grid>
       </Grid>
+      <Fab
+        aria-label="edit"
+        onClick={() => navigate("/blog/add")}
+        sx={{ position: "absolute", bottom: 20, right: 40 }}
+      >
+        <AddIcon />
+      </Fab>
     </Box>
   );
 }

@@ -15,6 +15,7 @@ import Layout from "./components/Layout/Layout";
 import Missing from "./components/Missing/Missing";
 import Blog from "./components/Blog/Blog";
 import BlogDetail from "./components/BlogDetail/BlogDetail";
+import BlogAdd from "./components/BlogAdd/BlogAdd";
 
 const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
@@ -115,6 +116,8 @@ function App() {
                 {/* Protected Routes */}
                 <Route element={<RequireAuth />}>
                   <Route path="/my-blog" element={<Blog />} />
+                  <Route path="/blog/add" element={<BlogAdd />} />
+                  <Route path="/blog/:id/edit" element={<BlogAdd />} />
                   <Route path="/game" element={<Refree />} />
                 </Route>
                 {/* Catch all */}

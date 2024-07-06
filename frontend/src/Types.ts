@@ -18,3 +18,8 @@ export enum TeamType {
   OPPONENT = "b",
   OUR = "w",
 }
+
+export type AlertHTML = {
+  severity: any;
+  message: string;
+};
