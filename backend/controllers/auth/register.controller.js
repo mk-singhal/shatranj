@@ -9,7 +9,7 @@ const handleNewUser = async (req, res) => {
       .json({ message: "Email and password are required." });
 
   // check for duplicate usernames in the db
-  const duplicate = await User.findOne({ email }).exec();
+  const duplicate = await User.findOne({ where: { email } });
   if (duplicate)
     return res.status(409).json({ message: "The user already exists" }); //Conflict
 
@@ -25,7 +25,7 @@ const handleNewUser = async (req, res) => {
       password: hashedPwd,
     });
 
-    console.log(result);
+    // console.log(result);
 
     res
       .status(201)

@@ -1,0 +1,53 @@
+const Tag = require("../../model/Tag");
+const User = require("../../model/User");
+const jwt = require("jsonwebtoken");
+
+// const bcrypt = require("bcrypt");
+
+const handleNewTag = async (req, res) => {
+  const cookies = req.cookies;
+  console.log(cookies);
+  if (!cookies?.jwt)
+    return res.status(401).json({ message: "Cookies are required." }); //Unauthorized
+  const refreshToken = cookies.jwt;
+
+  const foundUser = await User.findOne({ where: { refreshToken } });
+  if (!foundUser) return res.sendStatus(403); //Forbidden
+  // evaluate jwt
+  const decoded = jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN_SECRET,
+    (err, decoded) => {
+      if (err || foundUser.email !== decoded.email) return res.sendStatus(403); //Forbidden
+    }
+  );
+  const tag = req.body.tag;
+  console.log(tag);
+  if (!tag) return res.status(400).json({ message: "Tag name is required." });
+
+  try {
+    //create and store the new tag
+    const result = await Tag.create(
+      {
+        name: tag,
+        userId: {
+          foundUser,
+        },
+      },
+      {
+        include: [{
+          association: User,
+          as: "user"
+        }],
+      }
+    );
+
+    // console.log(result);
+
+    res.status(201).json({ success: `New tag \'${tag}\' created!` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { handleNewTag };

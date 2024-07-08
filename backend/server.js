@@ -8,12 +8,12 @@ const errorHandler = require("./middleware/errorHandler");
 const verifyJWT = require("./middleware/verifyJWT");
 const cookieParser = require("cookie-parser");
 const credentials = require("./middleware/credentials");
-const mongoose = require("mongoose");
-const connectDB = require("./config/dbConn");
+// const mongoose = require("mongoose");
+// const { mongoDb } = require("./config/dbConn");
 const PORT = process.env.PORT || 3500;
 
 // Connect to MongoDB
-connectDB();
+// mongoDb();
 
 // custom middleware logger
 app.use(logger);
@@ -42,6 +42,7 @@ app.use(verifyJWT);
 
 // routes only for authenticated users
 app.use("/my-blogs", require("./routes/myBlogs"));
+app.use("/tag", require("./routes/tag"));
 
 app.all("*", (req, res) => {
   res.status(404);
@@ -54,7 +55,9 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
-mongoose.connection.once("open", () => {
-  console.log("Connected to MongoDB");
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-});
+// app.listen(process.env.POSTGRESQL_PORT, () => console.log(`Postgre server running on port ${process.env.POSTGRESQL_PORT}`));
+
+// mongoose.connection.once("open", () => {
+//   console.log("Connected to MongoDB");
+// });
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

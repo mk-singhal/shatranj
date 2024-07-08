@@ -121,7 +121,7 @@ export default function Login() {
           message: "Missing Username or Password",
         });
       } else if (error.response?.status === 401) {
-        setAlert({ severity: "error", message: "Unauthorized" });
+        setAlert({ severity: "error", message: error.response.data.message ? error.response.data.message : "Unauthorized" });
       } else {
         setAlert({ severity: "error", message: "Login Failed" });
       }

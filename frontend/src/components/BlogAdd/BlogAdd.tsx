@@ -15,11 +15,16 @@ import ImageUploader from "../ImageUploader/ImageUploader";
 import SimpleEditor from "../Editor/Editor";
 import PublishIcon from "@mui/icons-material/Publish";
 import Alert from "@mui/material/Alert";
+import { axiosPrivate } from "../../api/axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 
 const filter = createFilterOptions<TagType>();
 
 export default function BlogDetail() {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const axiosPrivate = useAxiosPrivate();
 
   const theme = useTheme();
   const targetRef = React.useRef<HTMLDivElement>(null);
@@ -79,7 +84,7 @@ export default function BlogDetail() {
     validationError.editorError = false;
   }, [blogContent]);
 
-  const handlePost = (event: React.FormEvent<HTMLFormElement>) => {
+  const handlePost = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     console.log(tag, imageFile, blogContent, header);
     setValidationError({
@@ -88,6 +93,18 @@ export default function BlogDetail() {
       tagError: tag === null,
       editorError: blogContent.words === 0,
     });
+    try {
+      const response = await axiosPrivate.post(
+        "/tag/create",
+        JSON.stringify({
+          tag: tag?.title,
+        })
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+      // navigate("/login", { state: { from: location }, replace: true });
+    }
   };
 
   return (
