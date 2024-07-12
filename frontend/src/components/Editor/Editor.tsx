@@ -405,7 +405,7 @@ export default ({ setContent, pageHeaderHeight }: EditorProps) => {
   const [targetRefHeight, setTargetRefHeight] = useState(0);
   useEffect(() => {
     if (targetRef.current) {
-      console.log(targetRef, targetRef.current, targetRef.current.clientHeight);
+      // console.log(targetRef, targetRef.current, targetRef.current.clientHeight);
       setTargetRefHeight(targetRef.current.clientHeight);
     }
   }, [targetRef.current?.clientHeight]);

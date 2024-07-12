@@ -1,17 +1,4 @@
-// const mongoose = require("mongoose");
-
-// const mongoDb = async () => {
-//   try {
-//     await mongoose.connect(process.env.DATABASE_URI, {
-//       useUnifiedTopology: true,
-//       useNewUrlParser: true,
-//     });
-//   } catch (err) {
-//     console.error(err);
-//   }
-// };
-
-const { Sequelize } = require("sequelize");
+const { Sequelize, DataTypes } = require("sequelize");
 
 const psqlDb = new Sequelize(
   process.env.POSTGRESQL_DATABASE,
@@ -24,7 +11,6 @@ const psqlDb = new Sequelize(
     logging: false,
   }
 );
-// const psqlDb = new Sequelize(process.env.POSTGRESQL_DATABASE_URI)
 const testDbConnection = async () => {
   try {
     await psqlDb.authenticate();
@@ -44,4 +30,4 @@ testDbConnection();
 // await client.connect();
 
 // module.exports = { mongoDb, sq: psqlDb };
-module.exports = { sq: psqlDb };
+module.exports = { sq: psqlDb, Sequelize, DataTypes };

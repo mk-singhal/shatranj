@@ -6,6 +6,7 @@ import { Board, Pawn, Piece, Position } from "../../models";
 import { PieceType, TeamType } from "../../Types";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { useLocation, useNavigate } from "react-router-dom";
+import { axiosPrivateInstance } from "../../api/axios";
 
 export default function Referee() {
   const [board, setBoard] = useState<Board>(initialBoard);
@@ -13,7 +14,7 @@ export default function Referee() {
   const modalRef = useRef<HTMLDivElement>(null);
   const checkmateModalRef = useRef<HTMLDivElement>(null);
 
-  const axiosPrivate = useAxiosPrivate();
+  const axiosPrivate = useAxiosPrivate(axiosPrivateInstance);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -23,7 +24,7 @@ export default function Referee() {
 
     const getblogs = async () => {
       try {
-        const response = await axiosPrivate.get("/my-blogs", {
+        const response = await axiosPrivate.get("/blog", {
           signal: controller.signal,
         });
         console.log(response.data);
