@@ -1,4 +1,4 @@
-const User = require("../../model/User");
+const { User } = require("../../model/index");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -10,8 +10,8 @@ const handleLogin = async (req, res) => {
       .json({ message: "Email and password are required." });
   if (rememberMe) console.log("Remember Me");
   else console.log("Do not remember Me");
-  const foundUser = await User.findOne({ email }).exec();
-  if (!foundUser) return res.sendStatus(401); //Unauthorized
+  const foundUser = await User.findOne({ where: { email: email } });
+  if (!foundUser) return res.status(401).json({ message: "Email not registered" }); //Unauthorized
   // evaluate password
   const match = await bcrypt.compare(password, foundUser.password);
   const expRefreshToken = rememberMe ? 2 * 24 * 60 * 60 : 1 * 60 * 60;
@@ -34,9 +34,8 @@ const handleLogin = async (req, res) => {
     );
     // Saving refreshToken with current user
     foundUser.refreshToken = refreshToken;
-    const result = await foundUser.save();
-    console.log(result);
-    // console.log(roles);
+    const result = await foundUser.save({ fields: ['refreshToken'] });
+    // console.log(result);
 
     // Creates Secure Cookie with refresh token
     rememberMe
@@ -60,7 +59,7 @@ const handleLogin = async (req, res) => {
       accessToken,
     });
   } else {
-    res.sendStatus(401);
+    res.status(401).json({ message: "Wrong Password" });
   }
 };
 

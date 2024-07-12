@@ -1,31 +1,22 @@
 const { sq } = require("../config/dbConn");
 const { DataTypes } = require("sequelize");
 
-const User = sq.define("user", {
-  email: {
+const Blog = sq.define("blog", {
+  image: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   },
 
-  firstName: {
+  title: {
     type: DataTypes.STRING,
     allowNull: false,
   },
   
-  lastName: {
-    type: DataTypes.STRING,
-  },
-  
-  password: {
-    type: DataTypes.STRING,
+  content: {
+    type: DataTypes.TEXT('long'),
     allowNull: false,
-  },
-
-  refreshToken: {
-    type: DataTypes.STRING,
-    allowNull: true,
   },
 });
 
-module.exports = User;
+module.exports = Blog;

@@ -8,12 +8,11 @@ const errorHandler = require("./middleware/errorHandler");
 const verifyJWT = require("./middleware/verifyJWT");
 const cookieParser = require("cookie-parser");
 const credentials = require("./middleware/credentials");
-const mongoose = require("mongoose");
-const connectDB = require("./config/dbConn");
+const multer = require('multer');
+const path = require("path");
+const bodyParser = require("body-parser");
 const PORT = process.env.PORT || 3500;
-
-// Connect to MongoDB
-connectDB();
+const getBlogController = require("./controllers/blog/getBlog.controller");
 
 // custom middleware logger
 app.use(logger);
@@ -34,14 +33,19 @@ app.use(express.json());
 //middleware for cookies
 app.use(cookieParser());
 
+// send static files from the public
+app.use('/static', express.static(path.join(__dirname, '/uploads/blogs')))
+
 // routes
 app.use("/", require("./routes/auth"));
+app.get("/blog", getBlogController.getBlog);
 
 // verify JWT middleware
 app.use(verifyJWT);
 
 // routes only for authenticated users
-app.use("/my-blogs", require("./routes/myBlogs"));
+app.use("/blog", require("./routes/blog"));
+app.use("/tag", require("./routes/tag"));
 
 app.all("*", (req, res) => {
   res.status(404);
@@ -54,7 +58,4 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
-mongoose.connection.once("open", () => {
-  console.log("Connected to MongoDB");
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

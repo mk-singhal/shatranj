@@ -74,7 +74,7 @@ function ImageUploader({ error, updateImageFile }: Props) {
 
   const handleSubmit = (file: File) => {
     // event.preventDefault();
-    console.log(file);
+    // console.log(file);
     setPreview(URL.createObjectURL(file));
     updateImageFile(file);
   };
