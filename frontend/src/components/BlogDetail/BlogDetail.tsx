@@ -1,3 +1,4 @@
+import "./BlogDetail.css"
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -8,15 +9,38 @@ import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import CardContent from "@mui/material/CardContent";
 import { useTheme } from "@mui/material/styles";
-import { useLocation, useNavigate } from "react-router-dom";
+// import { useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Fab from "@mui/material/Fab";
 import ModeEditOutlineTwoToneIcon from "@mui/icons-material/ModeEditOutlineTwoTone";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
+import axios, { axiosPrivateInstance } from "../../api/axios";
+import DOMPurify from "dompurify";
+import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+
+type BlogType = {
+  id: number;
+  slug: string;
+  image: string;
+  title: string;
+  tag: {
+    name: string;
+  };
+  content: string;
+  user: {
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+  createdAt: string;
+};
 
 export default function BlogDetail() {
+  const axiosPrivate = useAxiosPrivate(axiosPrivateInstance);
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
+  const slug = useParams().slug;
 
   const theme = useTheme();
   const targetRef = React.useRef<HTMLDivElement>(null);
@@ -26,6 +50,53 @@ export default function BlogDetail() {
       console.log(targetRef.current, targetRef.current.offsetHeight);
       setTargetRefHeight(targetRef.current.offsetHeight);
     }
+  }, []);
+
+  // Month Date, Year , i.e. January 1, 2024
+  function formatDate(date: string = "") {
+    var formattedDate = "N.A.";
+    if (date == "") return formattedDate;
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    const isoDate = new Date((date.split(' ')[0]));
+    formattedDate = `${months[isoDate.getMonth()]} ${isoDate.getDate()}, ${isoDate.getFullYear()}`;
+    return formattedDate;
+  }
+  const [blog, setBlog] = React.useState<BlogType | null>(null);
+  const addView = async (id: number) => {
+    try {
+      await axiosPrivate.post(
+        "/blog/view/add",
+        JSON.stringify({ blogId: id })
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const getblogs = async () => {
+    try {
+      const response = await axios.get(`/blog/${slug}`);
+      setBlog(response.data.blog);
+      addView(response.data.blog.id);
+    } catch (error) {
+      console.log(error);
+      navigate("/blog");
+    }
+  };
+  React.useEffect(() => {
+    getblogs();
   }, []);
 
   return (
@@ -97,23 +168,21 @@ export default function BlogDetail() {
                   height: "auto",
                   width: "auto",
                 }}
-                image="/assets/no-profile/profile3.svg"
+                image={blog ? `http://localhost:3500/static/${blog.image}` : ""}
                 alt="Live from space album cover"
               />
               <CardContent sx={{ flex: "1 0 auto", pb: 1 }}>
-                <Typography component="div" variant="h5">
-                  Can You Solve the Challenges an International Master Faces
-                  During a Game? Can You a a aaa Solve the Challenges an
-                  International Master Faces During a Game?
+                <Typography component="div" variant="h4" fontWeight={600}>
+                  {blog?.title}
                 </Typography>
               </CardContent>
-              <Grid container p={1}>
+              <Grid container sx={{ p: { md: 1 } }}>
                 <Grid item xs={12} md={6}>
                   <Box
                     sx={{
                       display: "flex",
                       alignItems: "center",
-                      pl: 2,
+                      pl: { md: 2 },
                     }}
                   >
                     <SvgIcon
@@ -156,11 +225,11 @@ export default function BlogDetail() {
                       px={1}
                       fontWeight={600}
                     >
-                      Manik
+                      {blog?.user.firstName}
                     </Typography>
                     posted in
                     <Chip
-                      label="#orderAccessPortal"
+                      label={`#${blog?.tag.name}`}
                       color="primary"
                       sx={{ ml: 1 }}
                       onClick={() => {
@@ -174,7 +243,7 @@ export default function BlogDetail() {
                     sx={{
                       display: "flex",
                       alignItems: "center",
-                      pl: 2,
+                      pl: { md: 2 },
                     }}
                   >
                     <SvgIcon
@@ -202,7 +271,7 @@ export default function BlogDetail() {
                       color="text.secondary"
                       px={1}
                     >
-                      Jun 21, 2024
+                      {formatDate(blog?.createdAt)}
                     </Typography>
                   </Box>
                 </Grid>
@@ -218,7 +287,7 @@ export default function BlogDetail() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "flex-end",
-                        pl: 2,
+                        pl: { md: 2 },
                       }}
                     >
                       <SvgIcon
@@ -286,38 +355,8 @@ export default function BlogDetail() {
                   </Box>
                 </Grid>
               </Grid>
-              <CardContent sx={{ flex: "1 0 auto", pb: "64px !important" }}>
-                <Typography component="p">
-                  Menus that are generated by the bottom app bar (such as a
-                  bottom navigation drawer or overflow menu) open as bottom
-                  sheets at a highe vation than the bar. Menus that are
-                  generated by the bottom app bar (such as a bottom navigation
-                  drawer or overflow menu) open as bottom sheets at a highe
-                  vation than the bar. Menus that are generated by the bottom
-                  app bar (such as a bottom navigation drawer or overflow menu)
-                  open as bottom sheets at a highe vation than the bar. Menus
-                  that are generated by the bottom app bar (such as a bottom
-                  navigation drawer or overflow menu) open as bottom sheets at a
-                  highe vation than the bar. Menus that are generated by the
-                  bottom app bar (such as a bottom navigation drawer or overflow
-                  menu) open as bottom sheets at a highe vation than the bar.
-                  Menus that are generated by the bottom app bar (such as a
-                  bottom navigation drawer or overflow menu) open as bottom
-                  sheets at a highe vation than the bar. Menus that are
-                  generated by the bottom app bar (such as a bottom navigation
-                  drawer or overflow menu) open as bottom sheets at a highe
-                  vation than the bar. Menus that are generated by the bottom
-                  app bar (such as a bottom navigation drawer or overflow menu)
-                  open as bottom sheets at a highe vation than the bar. Menus
-                  that are generated by the bottom app bar (such as a bottom
-                  navigation drawer or overflow menu) open as bottom sheets at a
-                  highe vation than the bar. Menus that are generated by the
-                  bottom app bar (such as a bottom navigation drawer or overflow
-                  menu) open as bottom sheets at a highe vation than the bar.
-                  Menus that are generated by the bottom app bar (such as a
-                  bottom navigation drawer or overflow menu) open as bottom
-                  sheets at a highe vation than the bar.
-                </Typography>
+              <CardContent sx={{ width: "100%", p: { xs: 0, md: 2 },  flex: "1 0 auto", pb: "64px !important" }}>
+                {blog?.content && <div className="blog-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog?.content) }} /> }
               </CardContent>
             </Card>
           </Box>

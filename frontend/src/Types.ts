@@ -2,11 +2,12 @@ export type UserType = {
   id: number;
   email: string;
   firstName: string;
-  lastName: TagType;
+  lastName: string;
 };
 
 export type BlogType = {
   id: number;
+  slug: string;
   image: string;
   title: string;
   tag: TagType;
@@ -22,10 +23,10 @@ export type TagType = {
 };
 
 export type UserProfileType = {
+  id: number | null;
   firstName: string | null;
   lastName: string | null;
   email: string | null;
-  password: string | null;
 };
 
 export enum PieceType {

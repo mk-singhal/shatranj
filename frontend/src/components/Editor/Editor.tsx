@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "@tiptap/extension-link";
 import { EditorContent, useEditor, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import CharacterCount from '@tiptap/extension-character-count'
+import CharacterCount from "@tiptap/extension-character-count";
 import Paper from "@mui/material/Paper";
 import Divider from "@mui/material/Divider";
 import SvgIcon from "@mui/material/SvgIcon";
@@ -19,6 +19,9 @@ import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import FormatItalicIcon from "@mui/icons-material/FormatItalic";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
+import StrikethroughSIcon from "@mui/icons-material/StrikethroughS";
+import CodeIcon from "@mui/icons-material/Code";
+import HorizontalRuleIcon from "@mui/icons-material/HorizontalRule";
 import Box from "@mui/material/Box";
 import { useTheme } from "@mui/material/styles";
 
@@ -42,6 +45,8 @@ const StyledToggleButton = styled(ToggleButton)(() => ({
   color: "#00000094",
 }));
 
+// To do
+// Add <hr>, <br>, <code>, strike,
 const MenuBar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) {
     return null;
@@ -223,6 +228,50 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
             <FormatItalicIcon />
           </StyledToggleButton>
           <StyledToggleButton
+            onClick={() => editor.chain().focus().toggleStrike().run()}
+            disabled={!editor.can().chain().focus().toggleStrike().run()}
+            selected={editor.isActive("strike")}
+            value="strike"
+            aria-label="strike"
+          >
+            <StrikethroughSIcon />
+          </StyledToggleButton>
+          <StyledToggleButton
+            onClick={() => editor.chain().focus().setHorizontalRule().run()}
+            disabled={!editor.can().chain().focus().setHorizontalRule().run()}
+            value="horizontalRule"
+            aria-label="horizontal rule"
+          >
+            <HorizontalRuleIcon />
+          </StyledToggleButton>
+          <StyledToggleButton
+            onClick={() => editor.chain().focus().setHardBreak().run()}
+            disabled={!editor.can().chain().focus().setHardBreak().run()}
+            value="break"
+            aria-label="break"
+          >
+            <SvgIcon>
+              <svg
+                fill="#00000094"
+                width="800px"
+                height="800px"
+                viewBox="0 0 20 20"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect x="0" fill="none" width="20" height="20" />
+
+                <g>
+                  <path d="M16 4h2v9H7v3l-5-4 5-4v3h9V4z" />
+                </g>
+              </svg>
+            </SvgIcon>
+          </StyledToggleButton>
+          <Divider
+            flexItem
+            orientation="vertical"
+            sx={{ mx: 0.5, my: 1 }}
+          />
+          <StyledToggleButton
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             disabled={!editor.can().chain().focus().toggleBulletList().run()}
             selected={editor.isActive("bulletList")}
@@ -240,7 +289,13 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
           >
             <FormatListNumberedIcon />
           </StyledToggleButton>
+          <Divider
+            flexItem
+            orientation="vertical"
+            sx={{ display: { xs: "none", sm: "block" }, mx: 0.5, my: 1 }}
+          />
           <StyledToggleButton
+            sx={{ display: { xs: "none", sm: "inline-flex" } }}
             onClick={setLink}
             disabled={
               !editor.can().chain().focus().toggleLink({ href: "" }).run()
@@ -252,6 +307,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
             <InsertLinkIcon />
           </StyledToggleButton>
           <StyledToggleButton
+            sx={{ display: { xs: "none", sm: "inline-flex" } }}
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             disabled={!editor.can().chain().focus().toggleBlockquote().run()}
             selected={editor.isActive("blockquote")}
@@ -260,8 +316,17 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
           >
             <FormatQuoteIcon />
           </StyledToggleButton>
+          <StyledToggleButton
+            sx={{ display: { xs: "none", sm: "inline-flex" } }}
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            disabled={!editor.can().chain().focus().toggleCode().run()}
+            selected={editor.isActive("code")}
+            value="code"
+            aria-label="code"
+          >
+            <CodeIcon />
+          </StyledToggleButton>
         </StyledToggleButtonGroup>
-        {/* <br /> */}
         <StyledToggleButtonGroup
           size="small"
           aria-label="text formatting"
@@ -384,6 +449,40 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
               </svg>
             </SvgIcon>
           </StyledToggleButton>
+          <Divider
+            flexItem
+            orientation="vertical"
+            sx={{ mx: 0.5, my: 1 }}
+          />
+          <StyledToggleButton
+            onClick={setLink}
+            disabled={
+              !editor.can().chain().focus().toggleLink({ href: "" }).run()
+            }
+            selected={editor.isActive("link")}
+            value="link"
+            aria-label="link"
+          >
+            <InsertLinkIcon />
+          </StyledToggleButton>
+          <StyledToggleButton
+            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            disabled={!editor.can().chain().focus().toggleBlockquote().run()}
+            selected={editor.isActive("blockquote")}
+            value="blockquote"
+            aria-label="blockquote"
+          >
+            <FormatQuoteIcon />
+          </StyledToggleButton>
+          <StyledToggleButton
+            onClick={() => editor.chain().focus().toggleCode().run()}
+            disabled={!editor.can().chain().focus().toggleCode().run()}
+            selected={editor.isActive("code")}
+            value="code"
+            aria-label="code"
+          >
+            <CodeIcon />
+          </StyledToggleButton>
         </StyledToggleButtonGroup>
       </Paper>
     </>
@@ -413,6 +512,10 @@ export default ({ setContent, pageHeaderHeight }: EditorProps) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        codeBlock: false,
+        heading: {
+          levels: [1, 2, 3],
+        },
         bulletList: {
           keepMarks: true,
           keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
@@ -421,12 +524,13 @@ export default ({ setContent, pageHeaderHeight }: EditorProps) => {
           keepMarks: true,
           keepAttributes: false, // TODO : Making this as `false` becase marks are not preserved when I try to preserve attrs, awaiting a bit of help
         },
+        gapcursor: false,
       }),
       Link.configure({
         openOnClick: false,
         autolink: true,
         protocols: ["https"],
-      }),      
+      }),
       CharacterCount.configure(),
     ],
     content: `
@@ -501,13 +605,13 @@ export default ({ setContent, pageHeaderHeight }: EditorProps) => {
   });
 
   useEffect(() => {
-    if (editor) setContent({
-      words: editor.storage.characterCount.words(),
-      characters: editor.storage.characterCount.characters(),
-      content: editor.getHTML()
-    });
-  }, [editor, editor?.getHTML()])
-  
+    if (editor)
+      setContent({
+        words: editor.storage.characterCount.words(),
+        characters: editor.storage.characterCount.characters(),
+        content: editor.getHTML(),
+      });
+  }, [editor, editor?.getHTML()]);
 
   return (
     <>
@@ -515,7 +619,9 @@ export default ({ setContent, pageHeaderHeight }: EditorProps) => {
         <MenuBar editor={editor} />
       </div>
       <div style={{ all: "initial" }}>
-        <Box sx={{ mt: 1, p: 1, border: "2px dashed #d0cece", borderRadius: 1 }}>
+        <Box
+          sx={{ mt: 1, p: 1, border: "2px dashed #d0cece", borderRadius: 1 }}
+        >
           <Box
             sx={{
               "::-webkit-scrollbar-track": {

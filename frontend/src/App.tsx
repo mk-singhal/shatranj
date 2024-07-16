@@ -112,7 +112,7 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/blog" element={<Blog />} />
-                <Route path="/blog/:id" element={<BlogDetail />} />
+                <Route path="/blog/:slug" element={<BlogDetail />} />
                 {/* Protected Routes */}
                 <Route element={<RequireAuth />}>
                   <Route path="/my-blog" element={<Blog />} />

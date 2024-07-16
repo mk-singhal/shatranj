@@ -101,12 +101,13 @@ export default function Login() {
         }
       );
       console.log(JSON.stringify(res?.data));
+      const id = res?.data?.id;
       const firstName = res?.data?.firstName;
       const lastName = res?.data?.lastName;
       const accessToken = res?.data?.accessToken;
 
       setAuth(accessToken);
-      setUser({ firstName, lastName, email, password });
+      setUser({ id, firstName, lastName, email });
 
       if (res.data)
         setAlert({ severity: "success", message: "Login  successful" });

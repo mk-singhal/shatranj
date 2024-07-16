@@ -10,9 +10,7 @@ const cookieParser = require("cookie-parser");
 const credentials = require("./middleware/credentials");
 const multer = require('multer');
 const path = require("path");
-const bodyParser = require("body-parser");
 const PORT = process.env.PORT || 3500;
-const getBlogController = require("./controllers/blog/getBlog.controller");
 
 // custom middleware logger
 app.use(logger);
@@ -38,7 +36,7 @@ app.use('/static', express.static(path.join(__dirname, '/uploads/blogs')))
 
 // routes
 app.use("/", require("./routes/auth"));
-app.get("/blog", getBlogController.getBlog);
+app.use("/blog", require("./routes/viewBlog"));
 
 // verify JWT middleware
 app.use(verifyJWT);
