@@ -332,9 +332,10 @@ export default function ColorTabs() {
                           variant="subtitle1"
                           color="text.secondary"
                           pl={1}
-                          minWidth={{ xs: 80, sm: 100 }}
+                          pr={4}
+                          // minWidth={{ xs: 80, sm: 100 }}
                         >
-                          12345
+                          {blog?.likes || 0}
                         </Typography>
                         <SvgIcon
                           onClick={() => {
@@ -366,9 +367,10 @@ export default function ColorTabs() {
                           variant="subtitle1"
                           color="text.secondary"
                           pl={1}
-                          minWidth={{ xs: 80, sm: 100 }}
+                          pr={4}
+                          // minWidth={{ xs: 80, sm: 100 }}
                         >
-                          12345
+                          {blog?.views || 0}
                         </Typography>
                         <SvgIcon
                           onClick={() => {
@@ -378,7 +380,7 @@ export default function ColorTabs() {
                           className="MuiSvgIcon-root MuiSvgIcon-colorAction MuiSvgIcon-fontSizeMedium css-11pbyhm-MuiSvgIcon-root"
                           focusable="false"
                           aria-hidden="true"
-                          sx={{ maxHeight: 24, maxWidth: 24 }}
+                          // sx={{ maxHeight: 24, maxWidth: 24 }}
                           viewBox="0 0 24 24"
                           data-testid="PersonOutlineTwoToneIcon"
                         >
@@ -408,7 +410,7 @@ export default function ColorTabs() {
                           variant="subtitle1"
                           color="text.secondary"
                           pl={1}
-                          minWidth={100}
+                          // minWidth={100}
                         >
                           {blog.user.firstName + " " + blog.user.lastName}
                         </Typography>

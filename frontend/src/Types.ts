@@ -13,6 +13,8 @@ export type BlogType = {
   tag: TagType;
   content: string;
   user: UserType;
+  views: number;
+  likes: number;
   createdAt: string;
 };
 

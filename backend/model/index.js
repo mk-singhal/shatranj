@@ -55,10 +55,14 @@ Blog.belongsTo(Tag, {
   as: "tag",
 });
 
-// User has many Reactions
-// Blog has many Reactions
+// Using Sequelize super many-to-many
+// association on User, Blog & Reaction
 User.belongsToMany(Blog, { through: Reaction });
 Blog.belongsToMany(User, { through: Reaction });
+User.hasMany(Reaction);
+Reaction.belongsTo(User);
+Blog.hasMany(Reaction);
+Reaction.belongsTo(Blog);
 
 if (process.argv[2] === "manik") {
   User.sync({ alter: true }).then(() => {

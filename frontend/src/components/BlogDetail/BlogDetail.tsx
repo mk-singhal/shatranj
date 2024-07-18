@@ -1,4 +1,4 @@
-import "./BlogDetail.css"
+import "./BlogDetail.css";
 import * as React from "react";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -18,6 +18,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import axios, { axiosPrivateInstance } from "../../api/axios";
 import DOMPurify from "dompurify";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import FavoriteTwoToneIcon from "@mui/icons-material/FavoriteTwoTone";
 
 type BlogType = {
   id: number;
@@ -33,6 +34,10 @@ type BlogType = {
     firstName: string;
     lastName: string;
   };
+  reaction: {
+    like: number;
+    view: number;
+  }
   createdAt: string;
 };
 
@@ -70,25 +75,91 @@ export default function BlogDetail() {
       "November",
       "December",
     ];
-    const isoDate = new Date((date.split(' ')[0]));
-    formattedDate = `${months[isoDate.getMonth()]} ${isoDate.getDate()}, ${isoDate.getFullYear()}`;
+    const isoDate = new Date(date.split(" ")[0]);
+    formattedDate = `${
+      months[isoDate.getMonth()]
+    } ${isoDate.getDate()}, ${isoDate.getFullYear()}`;
     return formattedDate;
   }
   const [blog, setBlog] = React.useState<BlogType | null>(null);
+  const [likes, setLikes] = React.useState<number | null>(null);
+  const [views, setViews] = React.useState<number | null>(null);
+  
+  const [editable, setEditable] = React.useState<boolean>(false);
+  const [likeable, setLikeable] = React.useState<boolean>(false);
+  const [liked, setLiked] = React.useState<boolean>(false);
+  const addLike = async () => {
+    try {
+      const response = await axiosPrivate.post(
+        "/blog/like/add",
+        JSON.stringify({ blogId: blog?.id })
+      );
+      // setLikeable(response?.status === 201 || response?.status === 202);
+      setLiked(response?.data?.liked || false);
+    } catch (error: any) {
+      if (!error?.response) {
+        // setAlert({ severity: "error", message: "No Server Response" });
+      } else {
+        console.log(error);
+        // setAlert({ severity: "error", message: "Blog loading failed" });
+      }
+    } finally {
+      // setTimeout(() => {
+      //   setAlert(null);
+      // }, 3000);
+    }
+  };
+  const removeLike = async () => {
+    try {
+      const response = await axiosPrivate.post(
+        "/blog/like/remove",
+        JSON.stringify({ blogId: blog?.id })
+      );
+      // setLikeable(response?.status === 201 || response?.status === 202);
+      setLiked(response?.data?.liked || false);
+      console.log(response?.data?.liked || false);
+    } catch (error: any) {
+      if (!error?.response) {
+        // setAlert({ severity: "error", message: "No Server Response" });
+      } else {
+        console.log(error);
+        // setAlert({ severity: "error", message: "Blog loading failed" });
+      }
+    } finally {
+      // setTimeout(() => {
+      //   setAlert(null);
+      // }, 3000);
+    }
+  };
   const addView = async (id: number) => {
     try {
-      await axiosPrivate.post(
+      const response = await axiosPrivate.post(
         "/blog/view/add",
         JSON.stringify({ blogId: id })
       );
-    } catch (error) {
-      console.log(error);
+      setLikeable(response?.status === 201 || response?.status === 202);
+      setLiked(response?.data?.liked || false);
+    } catch (error: any) {
+      if (!error?.response) {
+        // setAlert({ severity: "error", message: "No Server Response" });
+      } else if (error.response?.status === 405) {
+        setEditable(true);
+      } else {
+        console.log(error);
+        // setAlert({ severity: "error", message: "Blog loading failed" });
+      }
+    } finally {
+      // setTimeout(() => {
+      //   setAlert(null);
+      // }, 3000);
     }
   };
   const getblogs = async () => {
     try {
       const response = await axios.get(`/blog/${slug}`);
       setBlog(response.data.blog);
+      setLikes(response?.data?.likeCount);
+      setViews(response?.data?.viewCount);
       addView(response.data.blog.id);
     } catch (error) {
       console.log(error);
@@ -122,16 +193,76 @@ export default function BlogDetail() {
             <Typography variant="h4" mr={"auto"}>
               Blogs
             </Typography>
-            <Button color="error" variant="outlined" startIcon={<DeleteIcon />}>
-              Delete
-            </Button>
-            <Fab
-              aria-label="edit"
-              onClick={() => navigate("/blog/1/edit")}
-              sx={{ position: "absolute", bottom: 20, right: 40 }}
-            >
-              <ModeEditOutlineTwoToneIcon />
-            </Fab>
+            {editable && (
+              <Button
+                color="error"
+                variant="outlined"
+                startIcon={<DeleteIcon />}
+              >
+                Delete
+              </Button>
+            )}
+            {editable && (
+              <Fab
+                aria-label="edit"
+                onClick={() => navigate("/blog/1/edit")}
+                sx={{ position: "absolute", bottom: 20, right: 40 }}
+              >
+                <ModeEditOutlineTwoToneIcon />
+              </Fab>
+            )}
+            {likeable && liked && (
+              <Fab
+                aria-label="edit"
+                onClick={removeLike}
+                sx={{
+                  position: "absolute",
+                  bottom: 20,
+                  right: 40,
+                  backgroundColor: "#ebebeb",
+                  "&:hover": {
+                    backgroundColor: "#ebebeb",
+                    // "path:first-of-type": {
+                    //   fill: "transparent",
+                    // },
+                  },
+                }}
+              >
+                <FavoriteTwoToneIcon
+                  sx={{
+                    "path:first-of-type": {
+                      fill: "#ff0000",
+                    }
+                  }}
+                />
+              </Fab>
+            )}
+            {likeable && !liked && (
+              <Fab
+                aria-label="edit"
+                onClick={addLike}
+                sx={{
+                  position: "absolute",
+                  bottom: 20,
+                  right: 40,
+                  backgroundColor: "#ebebeb",
+                  "&:hover": {
+                    backgroundColor: "#ebebeb",
+                    // "path:first-of-type": {
+                    //   fill: "#ff0000",
+                    // },
+                  },
+                }}
+              >
+                <FavoriteTwoToneIcon
+                  sx={{
+                    "path:first-of-type": {
+                      fill: "transparent",
+                    }
+                  }}
+                />
+              </Fab>
+            )}
           </Box>
         </Grid>
       </Grid>
@@ -314,7 +445,7 @@ export default function BlogDetail() {
                         ml={1}
                         minWidth={{ xs: 40, sm: 60 }}
                       >
-                        12345
+                        {likes}
                       </Typography>
                     </Box>
                     <Box
@@ -349,14 +480,28 @@ export default function BlogDetail() {
                         ml={1}
                         minWidth={{ xs: 40, sm: 60 }}
                       >
-                        12345
+                        {views}
                       </Typography>
                     </Box>
                   </Box>
                 </Grid>
               </Grid>
-              <CardContent sx={{ width: "100%", p: { xs: 0, md: 2 },  flex: "1 0 auto", pb: "64px !important" }}>
-                {blog?.content && <div className="blog-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog?.content) }} /> }
+              <CardContent
+                sx={{
+                  width: "100%",
+                  p: { xs: 0, md: 2 },
+                  flex: "1 0 auto",
+                  pb: "64px !important",
+                }}
+              >
+                {blog?.content && (
+                  <div
+                    className="blog-content"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(blog?.content),
+                    }}
+                  />
+                )}
               </CardContent>
             </Card>
           </Box>

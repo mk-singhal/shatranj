@@ -1,5 +1,3 @@
-const jwt = require("jsonwebtoken");
-
 const { User, Blog, Reaction } = require("../../model/index");
 
 const createBlogView = async (req, res) => {
@@ -11,7 +9,7 @@ const createBlogView = async (req, res) => {
     console.log("Comparing IDs: ", blog.userId, foundUser.id);
     if (foundUser && blog) {
       if (foundUser.id === blog.userId) return res.sendStatus(405);
-      await Reaction.findOrCreate({
+      const [reaction, created] = await Reaction.findOrCreate({
         where: {
           userId: foundUser.id,
           blogId: blog.id,
@@ -22,7 +20,14 @@ const createBlogView = async (req, res) => {
           view: true,
         },
       });
-      return res.status(200).json({ message: "Success" });
+      if (created) {
+        return res
+          .status(202)
+          .json({ message: "View already exists", liked: reaction.like });
+      }
+      return res
+        .status(201)
+        .json({ message: "View created", liked: reaction.like });
     }
   } catch (error) {
     console.log(error);
