@@ -14,6 +14,11 @@ import IconButton from "@mui/material/IconButton";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "../../api/axios.ts";
 import Alert from "@mui/material/Alert";
+import { useNavigate } from "react-router-dom";
+import Tooltip from "@mui/material/Tooltip";
+import InfoIcon from "@mui/icons-material/Info";
+import ClickAwayListener from "@mui/material/ClickAwayListener";
+import Fade from "@mui/material/Fade";
 
 const REGISTER_URL = "register";
 type AlertHTML = {
@@ -22,13 +27,23 @@ type AlertHTML = {
 };
 
 export default function Register() {
+  const navigate = useNavigate();
   const password = React.useRef<HTMLInputElement | null>(null);
 
   const [firstNameError, setFirstNameError] = React.useState("");
   const [lastNameError, setLastNameError] = React.useState<string>("");
   const [emailError, setEmailError] = React.useState("");
+  const [usernameError, setUsernameError] = React.useState("");
   const [passwordError, setPasswordError] = React.useState("");
   const [confirmPasswordError, setConfirmPasswordError] = React.useState("");
+
+  const [usernameTooltipOpen, setUsernameTooltipOpen] = React.useState(false);
+  const handleUsernameTooltipClose = () => {
+    setUsernameTooltipOpen(false);
+  };
+  const handleUsernameTooltipOpen = () => {
+    setUsernameTooltipOpen(true);
+  };
 
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
@@ -46,7 +61,26 @@ export default function Register() {
     event.preventDefault();
   };
 
-  const handleFirstNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  async function validateUsername(username: string): Promise<boolean> {
+    try {
+      const res = await axios.post(
+        "check-username",
+        JSON.stringify({ username }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      return res.data;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+
+  const handleFirstNameChange = (e: React.FocusEvent<HTMLInputElement>) => {
     if (e.target.value === "") {
       setFirstNameError("Required");
     } else if (!e.target.validity.valid) {
@@ -55,16 +89,17 @@ export default function Register() {
       setFirstNameError("");
     }
   };
-  const handleLastNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value === "") {
-      setLastNameError("Required");
-    } else if (!e.target.validity.valid) {
+  const handleLastNameChange = (e: React.FocusEvent<HTMLInputElement>) => {
+    // if (e.target.value === "") {
+    //   setLastNameError("Required");
+    // } else
+    if (!e.target.validity.valid) {
       setLastNameError("Only alphabets allowed");
     } else {
       setLastNameError("");
     }
   };
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEmailChange = (e: React.FocusEvent<HTMLInputElement>) => {
     if (e.target.value === "") {
       setEmailError("Required");
     } else if (!e.target.validity.valid) {
@@ -73,7 +108,32 @@ export default function Register() {
       setEmailError("");
     }
   };
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUsernameChange = async (
+    e: React.FocusEvent<HTMLInputElement>
+  ) => {
+    if (e.target.value === "") {
+      setUsernameError("Required");
+    } else if (!e.target.validity.valid) {
+      setUsernameError("Enter a valid username");
+      // } else if (await validateUsername(e.target.value)) {
+      //   setUsernameError("");
+    } else {
+      validateUsername(e.target.value)
+        .then((res) => {
+          console.log(res);
+          if (res) {
+            setUsernameError("");
+          } else {
+            setUsernameError("Username already taken");
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+          setUsernameError("Username already taken");
+        });
+    }
+  };
+  const handlePasswordChange = (e: React.FocusEvent<HTMLInputElement>) => {
     if (e.target.value === "") {
       setPasswordError("Required");
     } else if (e.target.value.length < 8) {
@@ -104,13 +164,18 @@ export default function Register() {
       return;
     }
     const lastName = data.get("lastName");
-    if (!lastName) {
-      setLastNameError("Required");
-      return;
-    }
+    // if (!lastName) {
+    //   setLastNameError("Required");
+    //   return;
+    // }
     const email = data.get("email");
     if (!email) {
       setEmailError("Required");
+      return;
+    }
+    const username = data.get("username");
+    if (!username) {
+      setUsernameError("Required");
       return;
     }
     const password = data.get("password");
@@ -136,6 +201,7 @@ export default function Register() {
           firstName,
           lastName,
           email,
+          username,
           password,
         }),
         {
@@ -149,16 +215,18 @@ export default function Register() {
       // console.log(res.accessToken);
       if (res.data && res.data.success)
         setAlert({ severity: "success", message: res.data.success });
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     } catch (error: any) {
       if (!error?.response) {
         setAlert({ severity: "error", message: "No Server Response" });
-        console.log("No Server Response");
+      } else if (error.response?.status === 400) {
+        setAlert({ severity: "error", message: error.response.data.message });
       } else if (error.response?.status === 409) {
-        setAlert({ severity: "error", message: "Email already registered" });
-        console.log("Email already registered");
+        setAlert({ severity: "error", message: error.response.data.message });
       } else {
         setAlert({ severity: "error", message: "Registeration Failed" });
-        console.log("Registeration Failed");
       }
     } finally {
       setTimeout(() => {
@@ -206,16 +274,16 @@ export default function Register() {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
-                autoComplete="given-name"
-                name="firstName"
                 required
+                autoFocus
                 error={Boolean(firstNameError)}
                 helperText={firstNameError}
-                onChange={handleFirstNameChange}
+                onBlur={handleFirstNameChange}
                 fullWidth
                 id="firstName"
                 label="First Name"
-                autoFocus
+                name="firstName"
+                autoComplete="given-name"
                 inputProps={{
                   pattern: "[a-zA-z ]+",
                 }}
@@ -223,10 +291,9 @@ export default function Register() {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                required
                 error={Boolean(lastNameError)}
                 helperText={lastNameError}
-                onChange={handleLastNameChange}
+                onBlur={handleLastNameChange}
                 fullWidth
                 id="lastName"
                 label="Last Name"
@@ -238,11 +305,91 @@ export default function Register() {
               />
             </Grid>
             <Grid item xs={12}>
+              <ClickAwayListener onClickAway={handleUsernameTooltipClose}>
+                <div>
+                  <Tooltip
+                    PopperProps={{
+                      disablePortal: true,
+                    }}
+                    onClose={handleUsernameTooltipClose}
+                    open={usernameTooltipOpen}
+                    slotProps={{
+                      popper: {
+                        modifiers: [
+                          {
+                            name: "offset",
+                            options: {
+                              offset: [3, -13],
+                            },
+                          },
+                        ],
+                      },
+                    }}
+                    disableFocusListener
+                    disableHoverListener
+                    disableTouchListener
+                    TransitionComponent={Fade}
+                    TransitionProps={{ timeout: 600 }}
+                    placement="bottom-end"
+                    title={
+                      <ul>
+                        <li>
+                          Username can only contain <b>letters</b>,{" "}
+                          <b>numbers</b>, <b>periods</b> and <b>underscores</b>.
+                        </li>
+                        <li>
+                          Username can <em>start</em> and <em>end</em> with{" "}
+                          <b>underscores</b> but never with <b>periods</b>.
+                        </li>
+                        <li>
+                          Username length should be between{" "}
+                          <b>4 and 20 characters</b>.
+                        </li>
+                        <li>
+                          <b>Spaces</b> are <em>not allowed</em>
+                        </li>
+                      </ul>
+                    }
+                  >
+                    <TextField
+                      required
+                      error={Boolean(usernameError)}
+                      helperText={usernameError}
+                      onBlur={handleUsernameChange}
+                      fullWidth
+                      id="username"
+                      label="Username"
+                      name="username"
+                      autoComplete="username"
+                      inputProps={{
+                        pattern: "^\\w[\\w.]{2,18}\\w$",
+                      }}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              aria-label="Open Username Tooltip"
+                              onClick={handleUsernameTooltipOpen}
+                              // onMouseDown={handleMouseDownShowPassword}
+                              edge="end"
+                            >
+                              <InfoIcon />
+                              {/* {showPassword ? <VisibilityOff /> : <Visibility />} */}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Tooltip>
+                </div>
+              </ClickAwayListener>
+            </Grid>
+            <Grid item xs={12}>
               <TextField
                 required
                 error={Boolean(emailError)}
                 helperText={emailError}
-                onChange={handleEmailChange}
+                onBlur={handleEmailChange}
                 fullWidth
                 id="email"
                 label="Email Address"
@@ -258,7 +405,7 @@ export default function Register() {
                 required
                 error={Boolean(passwordError)}
                 helperText={passwordError}
-                onChange={handlePasswordChange}
+                onBlur={handlePasswordChange}
                 fullWidth
                 name="password"
                 inputRef={password}
@@ -319,6 +466,7 @@ export default function Register() {
             disabled={Boolean(
               firstNameError ||
                 lastNameError ||
+                usernameError ||
                 emailError ||
                 passwordError ||
                 confirmPasswordError ||

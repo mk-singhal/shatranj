@@ -1,8 +1,26 @@
 if (process.argv[2] === "manik") require("dotenv").config();
 const User = require("./User");
+const UserCredentials = require("./UserCredentials");
 const Blog = require("./Blog");
 const Tag = require("./Tag");
 const Reaction = require("./Reaction");
+
+// User has one UserCredentials
+// UserCredentials belongs to one User
+User.hasOne(UserCredentials, {
+  foreignKey: {
+    name: "userId",
+    allowNull: false,
+  },
+  as: "credentials",
+});
+UserCredentials.belongsTo(User, {
+  foreignKey: {
+    name: "userId",
+    allowNull: false,
+  },
+  as: "user",
+});
 
 // User has many Tags
 // Tag belongs to one User
@@ -68,6 +86,9 @@ if (process.argv[2] === "manik") {
   User.sync({ alter: true }).then(() => {
     console.log("User Model altered");
   });
+  UserCredentials.sync({ alter: true }).then(() => {
+    console.log("UserCredentials Model altered");
+  });
   Blog.sync({ alter: true }).then(() => {
     console.log("Blog Model altered");
   });
@@ -81,6 +102,9 @@ if (process.argv[2] === "manik") {
   User.sync().then(() => {
     console.log("User Model synced");
   });
+  UserCredentials.sync().then(() => {
+    console.log("UserCredentials Model synced");
+  });
   Blog.sync().then(() => {
     console.log("Blog Model synced");
   });
@@ -92,4 +116,4 @@ if (process.argv[2] === "manik") {
   });
 }
 
-module.exports = { Tag, User, Blog, Reaction };
+module.exports = { Tag, User, UserCredentials, Blog, Reaction };

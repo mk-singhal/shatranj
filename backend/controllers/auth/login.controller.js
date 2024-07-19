@@ -1,4 +1,4 @@
-const { User } = require("../../model/index");
+const { User, UserCredentials } = require("../../model/index");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -12,8 +12,9 @@ const handleLogin = async (req, res) => {
   else console.log("Do not remember Me");
   const foundUser = await User.findOne({ where: { email: email } });
   if (!foundUser) return res.status(401).json({ message: "Email not registered" }); //Unauthorized
+  const foundUserCred = await UserCredentials.findOne({ where: { userId: foundUser.id } });
   // evaluate password
-  const match = await bcrypt.compare(password, foundUser.password);
+  const match = await bcrypt.compare(password, foundUserCred.password);
   const expRefreshToken = rememberMe ? 2 * 24 * 60 * 60 : 1 * 60 * 60;
 
   if (match) {
@@ -33,8 +34,8 @@ const handleLogin = async (req, res) => {
       { expiresIn: expRefreshToken }
     );
     // Saving refreshToken with current user
-    foundUser.refreshToken = refreshToken;
-    const result = await foundUser.save({ fields: ['refreshToken'] });
+    foundUserCred.refreshToken = refreshToken;
+    const result = await foundUserCred.save({ fields: ['refreshToken'] });
     // console.log(result);
 
     // Creates Secure Cookie with refresh token
