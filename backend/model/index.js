@@ -4,101 +4,245 @@ const UserCredentials = require("./UserCredentials");
 const Blog = require("./Blog");
 const Tag = require("./Tag");
 const Reaction = require("./Reaction");
-
-// User has one UserCredentials
-// UserCredentials belongs to one User
-User.hasOne(UserCredentials, {
-  foreignKey: {
-    name: "userId",
-    allowNull: false,
-  },
-  as: "credentials",
-});
-UserCredentials.belongsTo(User, {
-  foreignKey: {
-    name: "userId",
-    allowNull: false,
-  },
-  as: "user",
-});
-
-// User has many Tags
-// Tag belongs to one User
-User.hasMany(Tag, {
-  foreignKey: {
-    name: "userId",
-    allowNull: false,
-  },
-  as: "tag",
-});
-Tag.belongsTo(User, {
-  foreignKey: {
-    name: "userId",
-    allowNull: false,
-  },
-  as: "user",
-});
-
-// User has many Blogs
-// Blog belongs to one User
-User.hasMany(Blog, {
-  foreignKey: {
-    name: "userId",
-    allowNull: false,
-  },
-  as: "blog",
-});
-Blog.belongsTo(User, {
-  foreignKey: {
-    name: "userId",
-    allowNull: false,
-  },
-  as: "user",
-});
-
-// Tag has many Blogs
-// Blog belongs to one Tag
-Tag.hasMany(Blog, {
-  foreignKey: {
-    name: "tagId",
-    allowNull: false,
-  },
-  as: "blog",
-});
-Blog.belongsTo(Tag, {
-  foreignKey: {
-    name: "tagId",
-    allowNull: false,
-  },
-  as: "tag",
-});
-
-// Using Sequelize super many-to-many
-// association on User, Blog & Reaction
-User.belongsToMany(Blog, { through: Reaction });
-Blog.belongsToMany(User, { through: Reaction });
-User.hasMany(Reaction);
-Reaction.belongsTo(User);
-Blog.hasMany(Reaction);
-Reaction.belongsTo(Blog);
+const { sq } = require("../config/dbConn");
 
 if (process.argv[2] === "manik") {
-  User.sync({ alter: true }).then(() => {
-    console.log("User Model altered");
-  });
-  UserCredentials.sync({ alter: true }).then(() => {
-    console.log("UserCredentials Model altered");
-  });
-  Blog.sync({ alter: true }).then(() => {
-    console.log("Blog Model altered");
-  });
-  Tag.sync({ alter: true }).then(() => {
-    console.log("Tag Model altered");
-  });
-  Reaction.sync({ alter: true }).then(() => {
-    console.log("Reaction Model altered");
-  });
+  (async () => {
+    await sq.sync({ alter: true });
+
+    // User has one UserCredentials
+    // UserCredentials belongs to one User
+    User.hasOne(UserCredentials, {
+      foreignKey: {
+        name: "userId",
+        allowNull: false,
+      },
+      as: "credentials",
+    });
+    UserCredentials.belongsTo(User, {
+      foreignKey: {
+        name: "userId",
+        allowNull: false,
+      },
+      as: "user",
+    });
+
+    // User has many Tags
+    // Tag belongs to one User
+    User.hasMany(Tag, {
+      foreignKey: {
+        name: "userId",
+        allowNull: false,
+      },
+      as: "tag",
+    });
+    Tag.belongsTo(User, {
+      foreignKey: {
+        name: "userId",
+        allowNull: false,
+      },
+      as: "user",
+    });
+
+    // User has many Blogs
+    // Blog belongs to one User
+    User.hasMany(Blog, {
+      foreignKey: {
+        name: "userId",
+        allowNull: false,
+      },
+      as: "blog",
+    });
+    Blog.belongsTo(User, {
+      foreignKey: {
+        name: "userId",
+        allowNull: false,
+      },
+      as: "user",
+    });
+
+    // Tag has many Blogs
+    // Blog belongs to one Tag
+    Tag.hasMany(Blog, {
+      foreignKey: {
+        name: "tagId",
+        allowNull: false,
+      },
+      as: "blog",
+    });
+    Blog.belongsTo(Tag, {
+      foreignKey: {
+        name: "tagId",
+        allowNull: false,
+      },
+      as: "tag",
+    });
+
+    // Using Sequelize super many-to-many
+    // association on User, Blog & Reaction
+    User.belongsToMany(Blog, { through: Reaction });
+    Blog.belongsToMany(User, { through: Reaction });
+    User.hasMany(Reaction);
+    Reaction.belongsTo(User);
+    Blog.hasMany(Reaction);
+    Reaction.belongsTo(Blog);
+
+    await sq.sync({ alter: true });
+  })();
+
+  //   console.log("User Model altered");
+  //   UserCredentials.sync({ alter: true }).then(() => {
+  //     console.log("UserCredentials Model altered");
+  //     User.hasOne(UserCredentials, {
+  //       foreignKey: {
+  //         name: "userId",
+  //         allowNull: false,
+  //       },
+  //       as: "credentials",
+  //     });
+  //     UserCredentials.belongsTo(User, {
+  //       foreignKey: {
+  //         name: "userId",
+  //         allowNull: false,
+  //       },
+  //       as: "user",
+  //     });
+  //     Tag.sync({ alter: true }).then(() => {
+  //       console.log("Tag Model altered");
+  //       User.hasMany(Tag, {
+  //         foreignKey: {
+  //           name: "userId",
+  //           allowNull: false,
+  //         },
+  //         as: "tag",
+  //       });
+  //       Tag.belongsTo(User, {
+  //         foreignKey: {
+  //           name: "userId",
+  //           allowNull: false,
+  //         },
+  //         as: "user",
+  //       });
+  //       Blog.sync({ alter: true }).then(() => {
+  //         console.log("Blog Model altered");
+  //         User.hasMany(Blog, {
+  //           foreignKey: {
+  //             name: "userId",
+  //             allowNull: false,
+  //           },
+  //           as: "blog",
+  //         });
+  //         Blog.belongsTo(User, {
+  //           foreignKey: {
+  //             name: "userId",
+  //             allowNull: false,
+  //           },
+  //           as: "user",
+  //         });
+  //         Tag.hasMany(Blog, {
+  //           foreignKey: {
+  //             name: "tagId",
+  //             allowNull: false,
+  //           },
+  //           as: "blog",
+  //         });
+  //         Blog.belongsTo(Tag, {
+  //           foreignKey: {
+  //             name: "tagId",
+  //             allowNull: false,
+  //           },
+  //           as: "tag",
+  //         });
+  //         Reaction.sync({ alter: true }).then(() => {
+  //           console.log("Reaction Model altered");
+  //           User.belongsToMany(Blog, { through: Reaction });
+  //           Blog.belongsToMany(User, { through: Reaction });
+  //           User.hasMany(Reaction);
+  //           Reaction.belongsTo(User);
+  //           Blog.hasMany(Reaction);
+  //           Reaction.belongsTo(Blog);
+  //         });
+  //       });
+  //     });
+  //   });
+  // });
 } else {
+  // User has one UserCredentials
+  // UserCredentials belongs to one User
+  User.hasOne(UserCredentials, {
+    foreignKey: {
+      name: "userId",
+      allowNull: false,
+    },
+    as: "credentials",
+  });
+  UserCredentials.belongsTo(User, {
+    foreignKey: {
+      name: "userId",
+      allowNull: false,
+    },
+    as: "user",
+  });
+
+  // User has many Tags
+  // Tag belongs to one User
+  User.hasMany(Tag, {
+    foreignKey: {
+      name: "userId",
+      allowNull: false,
+    },
+    as: "tag",
+  });
+  Tag.belongsTo(User, {
+    foreignKey: {
+      name: "userId",
+      allowNull: false,
+    },
+    as: "user",
+  });
+
+  // User has many Blogs
+  // Blog belongs to one User
+  User.hasMany(Blog, {
+    foreignKey: {
+      name: "userId",
+      allowNull: false,
+    },
+    as: "blog",
+  });
+  Blog.belongsTo(User, {
+    foreignKey: {
+      name: "userId",
+      allowNull: false,
+    },
+    as: "user",
+  });
+
+  // Tag has many Blogs
+  // Blog belongs to one Tag
+  Tag.hasMany(Blog, {
+    foreignKey: {
+      name: "tagId",
+      allowNull: false,
+    },
+    as: "blog",
+  });
+  Blog.belongsTo(Tag, {
+    foreignKey: {
+      name: "tagId",
+      allowNull: false,
+    },
+    as: "tag",
+  });
+
+  // Using Sequelize super many-to-many
+  // association on User, Blog & Reaction
+  User.belongsToMany(Blog, { through: Reaction });
+  Blog.belongsToMany(User, { through: Reaction });
+  User.hasMany(Reaction);
+  Reaction.belongsTo(User);
+  Blog.hasMany(Reaction);
+  Reaction.belongsTo(Blog);
   User.sync().then(() => {
     console.log("User Model synced");
   });

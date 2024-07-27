@@ -8,16 +8,18 @@ const handleLogout = async (req, res) => {
   const refreshToken = cookies.jwt;
 
   // Is refreshToken in db?
-  const foundUser = await UserCredentials.findOne({ where: { refreshToken } });
-  if (!foundUser) {
+  const foundUserCred = await UserCredentials.findOne({
+    where: { refreshToken },
+  });
+  if (!foundUserCred) {
     res.clearCookie("jwt", { httpOnly: true }); // , sameSite: "None" , secure: true
     return res.sendStatus(204);
   }
 
   // Delete refreshToken in db
-  console.log(foundUser.refreshToken);
-  foundUser.refreshToken = "";
-  const result = await foundUser.save();
+  console.log(foundUserCred.refreshToken);
+  foundUserCred.refreshToken = null;
+  const result = await foundUserCred.save();
   console.log(result);
 
   res.clearCookie("jwt", { httpOnly: true }); // , sameSite: "None" , secure: true

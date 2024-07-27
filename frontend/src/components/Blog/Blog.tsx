@@ -30,7 +30,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 const limit = 5;
 
-export default function ColorTabs() {
+export default function Blog() {
   const navigate = useNavigate();
 
   // Selecting the tab based on the route
@@ -81,7 +81,7 @@ export default function ColorTabs() {
   const [isBlogLoading, setIsBlogLoading] = React.useState(false);
   const [index, setIndex] = React.useState(limit);
   const fetchBlogs = React.useCallback(async () => {
-    console.log(isBlogLoading, !moreContent);
+    // console.log(isBlogLoading, !moreContent);
     if (isBlogLoading || !moreContent) return;
 
     setIsBlogLoading(true);
@@ -93,13 +93,13 @@ export default function ColorTabs() {
       response.data.blogs.length === 0
         ? setIsBlogLoading(false)
         : setBlogs((prevItems) => {
-          if (prevItems) return [...prevItems, ...response.data.blogs];
-          getblogs();
-          return [...response.data.blogs]
-        });
+            if (prevItems) return [...prevItems, ...response.data.blogs];
+            getblogs();
+            return [...response.data.blogs];
+          });
     } catch (error) {
-      console.log(error);
       setMoreContent(false);
+      console.log(error);
     }
     setIndex((prevIndex) => prevIndex + limit);
     setIsBlogLoading(false);
@@ -252,7 +252,7 @@ export default function ColorTabs() {
                       <CardContent
                         sx={{ flex: "1 0 auto", pb: 1, cursor: "pointer" }}
                         onClick={() => {
-                          navigate(`/blog/${blog.slug}`);
+                          navigate(`/blog/${blog.tag.name}/${blog.slug}`);
                         }}
                       >
                         <Typography component="div" variant="h5" noWrap>
@@ -287,8 +287,8 @@ export default function ColorTabs() {
                             label={blog.tag.name}
                             color="primary"
                             onClick={() => {
-                              console.log("Chip Clicked");
-                              navigate(`/blog/tag/${blog.tag.id}`);
+                              // console.log("Chip Clicked");
+                              navigate(`/blog/${blog.tag.name}`);
                             }}
                             variant="outlined"
                           />
@@ -304,7 +304,7 @@ export default function ColorTabs() {
                       >
                         <SvgIcon
                           onClick={() => {
-                            navigate(`/blog/${blog.slug}`);
+                            navigate(`/blog/${blog.tag.name}/${blog.slug}`);
                           }}
                           cursor="pointer"
                           className="MuiSvgIcon-root MuiSvgIcon-colorAction MuiSvgIcon-fontSizeMedium css-11pbyhm-MuiSvgIcon-root"
@@ -325,7 +325,7 @@ export default function ColorTabs() {
                         </SvgIcon>
                         <Typography
                           onClick={() => {
-                            navigate(`/blog/${blog.slug}`);
+                            navigate(`/blog/${blog.tag.name}/${blog.slug}`);
                           }}
                           sx={{ cursor: "pointer" }}
                           component="div"
@@ -339,7 +339,7 @@ export default function ColorTabs() {
                         </Typography>
                         <SvgIcon
                           onClick={() => {
-                            navigate(`/blog/${blog.slug}`);
+                            navigate(`/blog/${blog.tag.name}/${blog.slug}`);
                           }}
                           cursor="pointer"
                           className="MuiSvgIcon-root MuiSvgIcon-colorAction MuiSvgIcon-fontSizeMedium css-11pbyhm-MuiSvgIcon-root"
@@ -360,7 +360,7 @@ export default function ColorTabs() {
                         </SvgIcon>
                         <Typography
                           onClick={() => {
-                            navigate(`/blog/${blog.slug}`);
+                            navigate(`/blog/${blog.tag.name}/${blog.slug}`);
                           }}
                           sx={{ cursor: "pointer" }}
                           component="div"
@@ -374,7 +374,7 @@ export default function ColorTabs() {
                         </Typography>
                         <SvgIcon
                           onClick={() => {
-                            navigate(`/blog/user/${blog.user.id}`);
+                            navigate(`/blog/user/${blog.user.username}`);
                           }}
                           cursor="pointer"
                           className="MuiSvgIcon-root MuiSvgIcon-colorAction MuiSvgIcon-fontSizeMedium css-11pbyhm-MuiSvgIcon-root"
@@ -403,7 +403,7 @@ export default function ColorTabs() {
                         </SvgIcon>
                         <Typography
                           onClick={() => {
-                            navigate(`/blog/user/${blog.user.id}`);
+                            navigate(`/blog/user/${blog.user.username}`);
                           }}
                           sx={{ cursor: "pointer" }}
                           component="div"
@@ -412,13 +412,13 @@ export default function ColorTabs() {
                           pl={1}
                           // minWidth={100}
                         >
-                          {blog.user.firstName + " " + blog.user.lastName}
+                          {blog.user.firstName} {blog.user.lastName}
                         </Typography>
                       </Box>
                     </Box>
                     <CardMedia
                       onClick={() => {
-                        navigate(`/blog/${blog.slug}`);
+                        navigate(`/blog/${blog.tag.name}/${blog.slug}`);
                       }}
                       component="img"
                       sx={{

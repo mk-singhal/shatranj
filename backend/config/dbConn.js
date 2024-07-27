@@ -8,7 +8,7 @@ const psqlDb = new Sequelize(
     dialect: "postgres",
     host: "localhost",
     port: process.env.POSTGRESQL_PORT,
-    logging: false,
+    logging: true,
   }
 );
 const testDbConnection = async () => {

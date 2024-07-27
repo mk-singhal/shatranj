@@ -19,27 +19,7 @@ import axios, { axiosPrivateInstance } from "../../api/axios";
 import DOMPurify from "dompurify";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import FavoriteTwoToneIcon from "@mui/icons-material/FavoriteTwoTone";
-
-type BlogType = {
-  id: number;
-  slug: string;
-  image: string;
-  title: string;
-  tag: {
-    name: string;
-  };
-  content: string;
-  user: {
-    email: string;
-    firstName: string;
-    lastName: string;
-  };
-  reaction: {
-    like: number;
-    view: number;
-  }
-  createdAt: string;
-};
+import { BlogType } from "../../Types";
 
 export default function BlogDetail() {
   const axiosPrivate = useAxiosPrivate(axiosPrivateInstance);
@@ -52,7 +32,7 @@ export default function BlogDetail() {
   const [targetRefHeight, setTargetRefHeight] = React.useState(0);
   React.useEffect(() => {
     if (targetRef.current) {
-      console.log(targetRef.current, targetRef.current.offsetHeight);
+      // console.log(targetRef.current, targetRef.current.offsetHeight);
       setTargetRefHeight(targetRef.current.offsetHeight);
     }
   }, []);
@@ -117,7 +97,7 @@ export default function BlogDetail() {
       );
       // setLikeable(response?.status === 201 || response?.status === 202);
       setLiked(response?.data?.liked || false);
-      console.log(response?.data?.liked || false);
+      // console.log(response?.data?.liked || false);
     } catch (error: any) {
       if (!error?.response) {
         // setAlert({ severity: "error", message: "No Server Response" });
@@ -318,7 +298,7 @@ export default function BlogDetail() {
                   >
                     <SvgIcon
                       onClick={() => {
-                        navigate(`/blog/user/manik`);
+                        navigate(`/blog/user/${blog?.user.username}`);
                       }}
                       cursor="pointer"
                       className="MuiSvgIcon-root MuiSvgIcon-colorAction MuiSvgIcon-fontSizeMedium css-11pbyhm-MuiSvgIcon-root"
@@ -347,7 +327,7 @@ export default function BlogDetail() {
                     </SvgIcon>
                     <Typography
                       onClick={() => {
-                        navigate(`/blog/user/manik`);
+                        navigate(`/blog/user/${blog?.user.username}`);
                       }}
                       sx={{ cursor: "pointer" }}
                       component="div"
@@ -356,7 +336,7 @@ export default function BlogDetail() {
                       px={1}
                       fontWeight={600}
                     >
-                      {blog?.user.firstName}
+                      {blog?.user.firstName} {blog?.user.lastName}
                     </Typography>
                     posted in
                     <Chip
@@ -364,7 +344,7 @@ export default function BlogDetail() {
                       color="primary"
                       sx={{ ml: 1 }}
                       onClick={() => {
-                        console.log("Chip Clicked");
+                        // console.log("Chip Clicked");
                         navigate(`/blog/tag/primary`);
                       }}
                       variant="outlined"

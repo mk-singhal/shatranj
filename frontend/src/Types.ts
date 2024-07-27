@@ -1,6 +1,7 @@
 export type UserType = {
   id: number;
   email: string;
+  username: string;
   firstName: string;
   lastName: string;
 };
@@ -24,11 +25,10 @@ export type TagType = {
   user: UserType;
 };
 
-export type UserProfileType = {
-  id: number | null;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
+export type ReactionType = {
+  id: number;
+  like: number;
+  view: number;
 };
 
 export enum PieceType {
