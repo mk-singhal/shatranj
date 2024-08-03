@@ -245,4 +245,37 @@ const getBlogDetail = async (req, res) => {
   }
 };
 
-module.exports = { getBlog, getUserBlog, getTagBlog, getBlogDetail };
+const getBlogDetailForEdit = async (req, res) => {
+  try {
+    const blog = await Blog.findOne({
+      where: { slug: req.params.slug },
+      attributes: ["image", "title", "content"],
+      include: [
+        {
+          model: Tag,
+          as: "tag",
+          attributes: ["id", "name"],
+        },
+        {
+          model: User,
+          as: "user",
+          attributes: ["email"],
+        },
+      ],
+    });
+    if (!blog) {
+      return res.status(204).json({ message: "No Blog found!" });
+    }
+    if (blog.user.email !== req.user) {
+      return res.status(403).json({ message: "You are not authorized to edit this blog" });
+    }
+    res
+      .status(200)
+      .json({ blog: blog });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { getBlog, getUserBlog, getTagBlog, getBlogDetail, getBlogDetailForEdit };

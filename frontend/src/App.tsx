@@ -18,6 +18,7 @@ import BlogDetail from "./components/BlogDetail/BlogDetail";
 import BlogAdd from "./components/BlogAdd/BlogAdd";
 import UserBlog from "./components/UserBlog/UserBlog";
 import TagBlog from "./components/TagBlog/TagBlog";
+import BlogEdit from "./components/BlogEdit/BlogEdit";
 
 const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
@@ -121,7 +122,7 @@ function App() {
                 <Route element={<RequireAuth />}>
                   <Route path="/my-blog" element={<Blog />} />
                   <Route path="/blog/add" element={<BlogAdd />} />
-                  <Route path="/blog/:id/edit" element={<BlogAdd />} />
+                  <Route path="/blog/edit/:slug" element={<BlogEdit />} />
                   <Route path="/game" element={<Refree />} />
                 </Route>
                 {/* Catch all */}

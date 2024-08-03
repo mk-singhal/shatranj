@@ -2,6 +2,10 @@ const { Blog, Tag, User } = require("../../model/index");
 const multer = require("multer");
 const { format } = require("date-fns");
 const { v4: uuid } = require("uuid");
+const fs = require("fs");
+const { promisify } = require("util");
+
+const unlinkAsync = promisify(fs.unlink);
 
 var storage = multer.diskStorage({
   destination: function (req, file, callback) {
@@ -9,7 +13,14 @@ var storage = multer.diskStorage({
   },
   filename: function (req, file, callback) {
     console.log(file, file.mimetype);
-    callback(null, uuid() + "-" + format(new Date(), "yyyyMMddHHmmss") + "." + file.mimetype.split("/")[1]);
+    callback(
+      null,
+      uuid() +
+        "-" +
+        format(new Date(), "yyyyMMddHHmmss") +
+        "." +
+        file.mimetype.split("/")[1]
+    );
   },
 });
 
@@ -33,21 +44,29 @@ const createBlog = async (req, res) => {
       // ERROR occurred (here it can be occurred due
       // to uploading image of size greater than
       // 10MB or uploading different file type)
-      return res.status(400).json({ message: `Error during uploading image: ${err}` });
+      return res
+        .status(500)
+        .json({ message: `Error during uploading image: ${err}` });
+    } else if (!req.file) {
+      return res.status(400).json({ message: "Please upload the image" });
     } else {
       // SUCCESS, image successfully uploaded
       console.log(req.body);
       const { title, tag, content } = req.body;
       var tagId = req.body.tagId;
-      if (!tagId || !title || !tag || !content)
+      if (!tagId || !title || !tag || !content) {
+        await unlinkAsync(req.file.path);
         return res.status(400).json({ message: "All fields are required" });
-      console.log(req.body);
+      }
+      // console.log(req.body);
       const author = req.user;
       const image = res.req.file.filename;
 
       const foundUser = await User.findOne({ where: { email: author } });
-      if (!foundUser)
+      if (!foundUser) {
+        await unlinkAsync(req.file.path);
         return res.status(403).json({ message: "User not found" }); //Forbidden
+      }
 
       if (tagId === "-1") {
         // Tag is unique, creating new tag
@@ -64,6 +83,7 @@ const createBlog = async (req, res) => {
             tagId = findTag.id;
           }
         } catch (err) {
+          await unlinkAsync(req.file.path);
           res
             .status(400)
             .json({ message: `Error during Tag creation: ${err.message}` });
@@ -82,6 +102,7 @@ const createBlog = async (req, res) => {
 
         res.status(201).json({ message: `Blog created!` });
       } catch (err) {
+        await unlinkAsync(req.file.path);
         res.status(500).json({ message: err.message });
       }
     }

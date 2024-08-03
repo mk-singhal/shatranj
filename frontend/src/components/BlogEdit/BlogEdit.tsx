@@ -14,11 +14,15 @@ import ImageUploader from "../ImageUploader/ImageUploader";
 import SimpleEditor from "../Editor/Editor";
 import PublishIcon from "@mui/icons-material/Publish";
 import Alert from "@mui/material/Alert";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
 import { AlertHTML, TagType } from "../../Types";
 import CircularProgress from "@mui/material/CircularProgress";
-import { axiosFilePrivateInstance, axiosPrivateInstance } from "../../api/axios";
+import {
+  axiosFilePrivateInstance,
+  axiosPrivateInstance,
+} from "../../api/axios";
+import Skeleton from "@mui/material/Skeleton";
 
 interface AutocompleteTagType {
   id: number;
@@ -28,10 +32,42 @@ interface AutocompleteTagType {
 
 const filter = createFilterOptions<AutocompleteTagType>();
 
-export default function BlogAdd() {
+export default function BlogEdit() {
   const navigate = useNavigate();
+  const slug = useParams().slug;
+
   const axiosPrivate = useAxiosPrivate(axiosPrivateInstance);
   const axiosFilePrivate = useAxiosPrivate(axiosFilePrivateInstance);
+
+  const [loading, setLoading] = React.useState(false);
+
+  const [originalImage, setOriginalImage] = React.useState<string>("");
+  // const [originalHeader, setOriginalHeader] = React.useState<string>("");
+  const [originalContent, setOriginalContent] = React.useState<string>("");
+  const getblog = async () => {
+    try {
+      setLoading(true);
+      setSubmitLoading(true);
+      const response = await axiosPrivate.get(`/blog/edit-get/${slug}`);
+      const blog = response.data.blog;
+      setOriginalImage(
+        blog?.image ? `http://localhost:3500/static/${blog?.image}` : ""
+      );
+      // setOriginalHeader(blog?.title);
+      setHeader(blog?.title);
+      setTag({ id: -2, title: blog?.tag.name });
+      setOriginalContent(blog?.content ? blog?.content : null);
+    } catch (error) {
+      console.log(error);
+      navigate("/blog");
+    } finally {
+      setLoading(false);
+      setSubmitLoading(false);
+    }
+  };
+  React.useEffect(() => {
+    getblog();
+  }, []);
 
   const [tagList, setTagList] = React.useState<AutocompleteTagType[]>([]);
   React.useEffect(() => {
@@ -74,7 +110,9 @@ export default function BlogAdd() {
 
   const [header, setHeader] = React.useState<string>("");
 
-  const [imageFile, setImageFile] = React.useState<File | null>(null);
+  const [imageFile, setImageFile] = React.useState<File | null>(
+    new File([], "")
+  );
   function updateImageFile(img: File | null) {
     setImageFile(img);
   }
@@ -102,7 +140,7 @@ export default function BlogAdd() {
     handleClose();
   };
 
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [submitLoading, setSubmitLoading] = React.useState(false);
   const [alert, setAlert] = React.useState<AlertHTML | null>();
   const [validationError, setValidationError] = React.useState({
     imageError: false,
@@ -139,18 +177,22 @@ export default function BlogAdd() {
       blogContent.words === 0
     )
       return;
-    setIsLoading(true);
+    setSubmitLoading(true);
     const formData: FormData = new FormData();
+
     formData.append("image", imageFile);
     formData.append("title", header);
     formData.append("tag", tag?.title);
-    formData.append("tagId", tag?.id.toString());
     formData.append("content", blogContent.content);
+
     try {
-      const response = await axiosFilePrivate.post("/blog/create", formData);
+      const response = await axiosFilePrivate.put(
+        `/blog/edit/${slug}`,
+        formData
+      );
       if (response.data)
         setAlert({ severity: "success", message: response.data.message });
-      navigate("/blog");
+      navigate(`/blog/${tag?.title}/${slug}`);
     } catch (error: any) {
       if (!error?.response) {
         setAlert({ severity: "error", message: "No Server Response" });
@@ -163,10 +205,10 @@ export default function BlogAdd() {
         });
       }
     } finally {
-      // setTimeout(() => {
-      //   setAlert(null);
-      // }, 3000);
-      setIsLoading(false);
+      setTimeout(() => {
+        setAlert(null);
+        setSubmitLoading(false);
+      }, 3000);
     }
   };
 
@@ -188,17 +230,17 @@ export default function BlogAdd() {
             }}
           >
             <Typography variant="h4" mr={"auto"}>
-              Create a Blog
+              Edit the Blog
             </Typography>
             <Button
               color="primary"
               variant="contained"
               onClick={(e) => handlePost(e)}
               startIcon={<PublishIcon />}
-              disabled={isLoading}
+              disabled={submitLoading}
             >
               Post
-              {isLoading && (
+              {submitLoading && (
                 <CircularProgress
                   size={24}
                   sx={{
@@ -247,101 +289,161 @@ export default function BlogAdd() {
                 </Grid>
               )}
               <Grid item xs={12}>
-                <ImageUploader
-                  error={validationError.imageError}
-                  originalImage={""}
-                  updateImageFile={updateImageFile}
-                />
+                {loading ? (
+                  <Box
+                    sx={{
+                      maxWidth: "50%",
+                      height: "350px",
+                      width: "auto",
+                      margin: "auto",
+                    }}
+                  >
+                    <Skeleton
+                      animation="wave"
+                      variant="rectangular"
+                      sx={{
+                        height: "inherit",
+                        width: "inherit",
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <ImageUploader
+                    error={validationError.imageError}
+                    originalImage={originalImage}
+                    updateImageFile={updateImageFile}
+                  />
+                )}
               </Grid>
               <Grid item xs={12} lg={8}>
-                <TextField
-                  fullWidth
-                  value={header}
-                  onChange={(event) => {
-                    setValidationError({
-                      ...validationError,
-                      headingError: false,
-                    });
-                    setHeader(event.target.value);
-                  }}
-                  id="outlined-basic"
-                  label="Heading"
-                  variant="outlined"
-                  error={validationError.headingError}
-                  helperText={
-                    validationError.headingError ? "Heading is required." : ""
-                  }
-                />
+                {loading ? (
+                  <Box
+                    sx={{
+                      maxWidth: "100%",
+                      height: "56px",
+                      width: "auto",
+                    }}
+                  >
+                    <Skeleton
+                      animation="wave"
+                      variant="rectangular"
+                      sx={{
+                        height: "inherit",
+                        width: "inherit",
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <TextField
+                    fullWidth
+                    value={header}
+                    onChange={(event) => {
+                      setValidationError({
+                        ...validationError,
+                        headingError: false,
+                      });
+                      setHeader(event.target.value);
+                    }}
+                    id="outlined-basic"
+                    label="Heading"
+                    variant="outlined"
+                    error={validationError.headingError}
+                    helperText={
+                      validationError.headingError ? "Heading is required." : ""
+                    }
+                  />
+                )}
               </Grid>
               <Grid item xs={12} lg={4}>
-                <Autocomplete
-                  value={tag}
-                  onChange={(_event, newValue) => {
-                    setValidationError({
-                      ...validationError,
-                      tagError: false,
-                    });
-                    if (typeof newValue === "string") {
-                      // timeout to avoid instant validation of the dialog's form.
-                      setTimeout(() => {
-                        toggleOpen(true);
-                        setDialogValue({ id: -1, title: newValue });
-                      });
-                    } else if (newValue && newValue.inputValue) {
-                      toggleOpen(true);
-                      setDialogValue({ id: -1, title: newValue.inputValue });
-                    } else {
-                      setTag(newValue);
-                    }
-                  }}
-                  filterOptions={(options, params) => {
-                    const filtered = filter(options, params);
-
-                    if (params.inputValue !== "") {
-                      filtered.push({
-                        id: 0,
-                        inputValue: params.inputValue,
-                        title: `Add "${params.inputValue}"`,
-                      });
-                    }
-
-                    return filtered;
-                  }}
-                  id="blog-tag"
-                  options={tagList}
-                  getOptionLabel={(option) => {
-                    // for example value selected with enter, right from the input
-                    if (typeof option === "string") {
-                      return option;
-                    }
-                    if (option.inputValue) {
-                      return option.inputValue;
-                    }
-                    return option.title;
-                  }}
-                  selectOnFocus
-                  clearOnBlur
-                  handleHomeEndKeys
-                  renderOption={(props, option) => {
-                    return (
-                      <li {...props} key={option.id}>
-                        {option.title}
-                      </li>
-                    );
-                  }}
-                  sx={{ width: { xs: 298, lg: "100%" } }}
-                  freeSolo
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      error={validationError.tagError}
-                      helperText={
-                        validationError.tagError ? "Tag is required." : ""
-                      }
-                      label="Tag"
+                {loading ? (
+                  <Box
+                    sx={{
+                      // maxWidth: "100%",
+                      height: "56px",
+                      width: { xs: 298, lg: "100%" },
+                    }}
+                  >
+                    <Skeleton
+                      animation="wave"
+                      variant="rectangular"
+                      sx={{
+                        height: "inherit",
+                        width: "inherit",
+                      }}
                     />
-                  )}
-                />
+                  </Box>
+                ) : (
+                  <Autocomplete
+                    value={tag}
+                    onChange={(_event, newValue) => {
+                      console.log(newValue);
+
+                      setValidationError({
+                        ...validationError,
+                        tagError: false,
+                      });
+                      if (typeof newValue === "string") {
+                        // timeout to avoid instant validation of the dialog's form.
+                        setTimeout(() => {
+                          toggleOpen(true);
+                          setDialogValue({ id: -1, title: newValue });
+                        });
+                      } else if (newValue && newValue.inputValue) {
+                        toggleOpen(true);
+                        setDialogValue({ id: -1, title: newValue.inputValue });
+                      } else {
+                        setTag(newValue);
+                      }
+                    }}
+                    filterOptions={(options, params) => {
+                      const filtered = filter(options, params);
+
+                      if (params.inputValue !== "") {
+                        filtered.push({
+                          id: 0,
+                          inputValue: params.inputValue,
+                          title: `Add "${params.inputValue}"`,
+                        });
+                      }
+
+                      return filtered;
+                    }}
+                    id="blog-tag"
+                    options={tagList}
+                    getOptionLabel={(option) => {
+                      // for example value selected with enter, right from the input
+                      if (typeof option === "string") {
+                        return option;
+                      }
+                      if (option.inputValue) {
+                        return option.inputValue;
+                      }
+                      return option.title;
+                    }}
+                    selectOnFocus
+                    clearOnBlur
+                    handleHomeEndKeys
+                    renderOption={(props, option) => {
+                      return (
+                        <li {...props} key={option.id}>
+                          {option.title}
+                        </li>
+                      );
+                    }}
+                    sx={{ width: { xs: 298, lg: "100%" } }}
+                    freeSolo
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        error={validationError.tagError}
+                        helperText={
+                          validationError.tagError ? "Tag is required." : ""
+                        }
+                        label="Tag"
+                      />
+                    )}
+                  />
+                )}
                 <Dialog open={open} onClose={handleClose}>
                   <form onSubmit={handleSubmit}>
                     <DialogTitle>Add a new tag</DialogTitle>
@@ -381,10 +483,30 @@ export default function BlogAdd() {
                     Blog content cannot be empty
                   </Alert>
                 )}
-                <SimpleEditor
-                  setContent={setBlogContent}
-                  pageHeaderHeight={targetRefHeight}
-                />
+                {loading ? (
+                  <Box
+                    sx={{
+                      height: "350px",
+                      width: "100%",
+                      margin: "auto",
+                    }}
+                  >
+                    <Skeleton
+                      animation="wave"
+                      variant="rectangular"
+                      sx={{
+                        height: "inherit",
+                        width: "inherit",
+                      }}
+                    />
+                  </Box>
+                ) : (
+                  <SimpleEditor
+                    originalContent={originalContent}
+                    setContent={setBlogContent}
+                    pageHeaderHeight={targetRefHeight}
+                  />
+                )}
               </Grid>
             </Grid>
           </Box>
@@ -393,27 +515,3 @@ export default function BlogAdd() {
     </Box>
   );
 }
-
-// const tags: readonly AutocompleteTagType[] = [
-//   { id: 1, title: "The Shawshank Redemption" },
-//   { id: 2, title: "The Godfather" },
-//   { id: 3, title: "The Godfather: Part II" },
-//   { id: 4, title: "The Dark Knight" },
-//   { id: 5, title: "12 Angry Men" },
-//   { id: 6, title: "Schindler's List" },
-//   { id: 7, title: "Pulp Fiction" },
-//   {
-//     id: 8,
-//     title: "The Lord of the Rings: The Return of the King",
-//   },
-//   { id: 9, title: "The Good, the Bad and the Ugly" },
-//   { id: 10, title: "Fight Club" },
-//   {
-//     id: 11,
-//     title: "The Lord of the Rings: The Fellowship of the Ring",
-//   },
-//   {
-//     id: 12,
-//     title: "Star Wars: Episode V - The Empire Strikes Back",
-//   },
-// ];

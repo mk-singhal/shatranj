@@ -185,7 +185,7 @@ export default function BlogDetail() {
             {editable && (
               <Fab
                 aria-label="edit"
-                onClick={() => navigate("/blog/1/edit")}
+                onClick={() => navigate(`/blog/edit/${slug}`)}
                 sx={{ position: "absolute", bottom: 20, right: 40 }}
               >
                 <ModeEditOutlineTwoToneIcon />

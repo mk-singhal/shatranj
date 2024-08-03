@@ -163,7 +163,7 @@ export default function TagBlock() {
     >
       <Grid container ref={targetRef}>
         <Grid item xs={12}>
-          <Typography variant="h4">{tag?.name}</Typography>
+          <Typography variant="h4">#{tag?.name}</Typography>
         </Grid>
         <Grid item xs={12} md={6}>
           <Tabs value={tab} onChange={handleChange} aria-label="Tabs for tags">
@@ -315,7 +315,7 @@ export default function TagBlock() {
                                 label={blog.tag.name}
                                 color="primary"
                                 onClick={() => {
-                                  navigate(`/blog/${blog.tag.name}`);
+                                  navigate(`/blog/${blog.tag.name}/${blog.slug}`);
                                 }}
                                 variant="outlined"
                               />
@@ -401,7 +401,7 @@ export default function TagBlock() {
                             </Typography>
                             <SvgIcon
                               onClick={() => {
-                                navigate(`/blog/${blog.tag.name}/${blog.slug}`);
+                                navigate(`/blog/user/${blog.user.username}`);
                               }}
                               cursor="pointer"
                               className="MuiSvgIcon-root MuiSvgIcon-colorAction MuiSvgIcon-fontSizeMedium css-11pbyhm-MuiSvgIcon-root"
@@ -430,7 +430,7 @@ export default function TagBlock() {
                             </SvgIcon>
                             <Typography
                               onClick={() => {
-                                navigate(`/blog/${blog.tag.name}/${blog.slug}`);
+                                navigate(`/blog/user/${blog.user.username}`);
                               }}
                               sx={{ cursor: "pointer" }}
                               component="div"

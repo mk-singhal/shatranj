@@ -266,11 +266,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
               </svg>
             </SvgIcon>
           </StyledToggleButton>
-          <Divider
-            flexItem
-            orientation="vertical"
-            sx={{ mx: 0.5, my: 1 }}
-          />
+          <Divider flexItem orientation="vertical" sx={{ mx: 0.5, my: 1 }} />
           <StyledToggleButton
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             disabled={!editor.can().chain().focus().toggleBulletList().run()}
@@ -449,11 +445,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
               </svg>
             </SvgIcon>
           </StyledToggleButton>
-          <Divider
-            flexItem
-            orientation="vertical"
-            sx={{ mx: 0.5, my: 1 }}
-          />
+          <Divider flexItem orientation="vertical" sx={{ mx: 0.5, my: 1 }} />
           <StyledToggleButton
             onClick={setLink}
             disabled={
@@ -490,6 +482,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 };
 
 type EditorProps = {
+  originalContent?: string;
   setContent: (value: {
     content: string;
     words: number;
@@ -498,7 +491,11 @@ type EditorProps = {
   pageHeaderHeight: number;
 };
 
-export default ({ setContent, pageHeaderHeight }: EditorProps) => {
+export default ({
+  originalContent,
+  setContent,
+  pageHeaderHeight,
+}: EditorProps) => {
   const theme = useTheme();
   const targetRef = useRef<HTMLDivElement>(null);
   const [targetRefHeight, setTargetRefHeight] = useState(0);
@@ -533,76 +530,88 @@ export default ({ setContent, pageHeaderHeight }: EditorProps) => {
       }),
       CharacterCount.configure(),
     ],
-    content: `
-      <h1>
-        Guide for Bloggers
-      </h1>
-      <h2>
-        Writing a Chess Blog Post
-      </h2>
-      <ol>
-        <li><p>
-          <strong>Choose a Topic:</strong> 
-          Select topics like chess basics, strategies, 
-          famous games, or player profiles.
-        </p></li>
-        <li><p>
-          <strong>Craft a Title:</strong> 
-          Make it clear and intriguing, e.g., 
-          "Mastering the Sicilian Defense."
-        </p></li>
-        <li><p>
-          <strong>Write an Introduction:</strong> 
-          Hook readers with the topic’s importance.
-        </p></li>
-        <li><p>
-          <strong>Structure Content:</strong> 
-          Use headings and subheadings for clarity.
-        </p></li>
-        <li><p>
-          <strong>Use Visuals:</strong> 
-          Include diagrams or images.
-        </p></li>
-        <li><p>
-          <strong>Offer Tips:</strong> 
-          Provide actionable advice.
-        </p></li>
-        <li><p>
-          <strong>Include Quotes:</strong> 
-          Inspire with famous chess quotes.
-        </p></li>
-        <li><p>
-          <strong>Engage Readers:</strong> 
-          Encourage comments and interaction.
-        </p></li>
-        <li><p>
-          <strong>Edit:</strong> 
-          Ensure error-free, smooth flow.
-          </p></li>
-        <li><p>
-          <strong>Call to Action:</strong> 
-          Invite further engagement.
-        </p></li>
-      </ol>
-      <p>Here's a famous quote by <em>Tigran Petrosian</em> :-</p>
-      <blockquote>
-        “Chess is a game by its form, an art by 
-        its content and a science by the difficulty 
-        of gaining mastery in it.”
-        <br>by <strong>Tigran Petrosian</strong>
-      </blockquote>
-      <p>
-        By following these steps, you'll create 
-        engaging chess blog posts. Happy blogging!
-      </p>
-    `,
+    content: `<h2>Loading...</h2><br><br>`,
     editorProps: {
       attributes: {
         spellcheck: "false",
         class: "editor-content",
       },
     },
+    editable: false,
   });
+
+  useEffect(() => {
+    if (editor) {
+      editor.commands.setContent(
+        originalContent
+          ? originalContent
+          : `
+            <h1>
+              Guide for Bloggers
+            </h1>
+            <h2>
+              Writing a Chess Blog Post
+            </h2>
+            <ol>
+              <li><p>
+                <strong>Choose a Topic:</strong> 
+                Select topics like chess basics, strategies, 
+                famous games, or player profiles.
+              </p></li>
+              <li><p>
+                <strong>Craft a Title:</strong> 
+                Make it clear and intriguing, e.g., 
+                "Mastering the Sicilian Defense."
+              </p></li>
+              <li><p>
+                <strong>Write an Introduction:</strong> 
+                Hook readers with the topic’s importance.
+              </p></li>
+              <li><p>
+                <strong>Structure Content:</strong> 
+                Use headings and subheadings for clarity.
+              </p></li>
+              <li><p>
+                <strong>Use Visuals:</strong> 
+                Include diagrams or images.
+              </p></li>
+              <li><p>
+                <strong>Offer Tips:</strong> 
+                Provide actionable advice.
+              </p></li>
+              <li><p>
+                <strong>Include Quotes:</strong> 
+                Inspire with famous chess quotes.
+              </p></li>
+              <li><p>
+                <strong>Engage Readers:</strong> 
+                Encourage comments and interaction.
+              </p></li>
+              <li><p>
+                <strong>Edit:</strong> 
+                Ensure error-free, smooth flow.
+                </p></li>
+              <li><p>
+                <strong>Call to Action:</strong> 
+                Invite further engagement.
+              </p></li>
+            </ol>
+            <p>Here's a famous quote by <em>Tigran Petrosian</em> :-</p>
+            <blockquote>
+              “Chess is a game by its form, an art by 
+              its content and a science by the difficulty 
+              of gaining mastery in it.”
+              <br>by <strong>Tigran Petrosian</strong>
+            </blockquote>
+            <p>
+              By following these steps, you'll create 
+              engaging chess blog posts. Happy blogging!
+            </p>
+            `
+      );
+      editor.setEditable(true);
+    }
+  }, [editor, originalContent]);
 
   useEffect(() => {
     if (editor)

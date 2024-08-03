@@ -163,7 +163,15 @@ export default function UserBlog() {
     >
       <Grid container ref={targetRef}>
         <Grid item xs={12}>
-          <Typography variant="h4">{user?.firstName} {user?.lastName}</Typography>
+          <Stack direction="column" spacing={2}>
+            <Typography variant="h4">{user?.firstName}'s Blogs</Typography>
+            <Typography
+              sx={{ fontStyle: "italic", mt: "0 !important" }}
+              variant="subtitle1"
+            >
+              @{username}
+            </Typography>
+          </Stack>
         </Grid>
         <Grid item xs={12} md={6}>
           <Tabs value={tab} onChange={handleChange} aria-label="Tabs for blogs">

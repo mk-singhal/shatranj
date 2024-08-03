@@ -22,13 +22,21 @@ const VisuallyHiddenInput = styled("input")({
 
 interface Props {
   error: boolean;
+  originalImage: string;
   updateImageFile: (File: File | null) => void;
 }
 
-function ImageUploader({ error, updateImageFile }: Props) {
+function ImageUploader({ error, originalImage, updateImageFile }: Props) {
   const [alert, setAlert] = React.useState<AlertHTML | null>();
-  const [loading, setLoading] = React.useState<Boolean>(false);
+  const [loading, setLoading] = React.useState<Boolean>(true);
   const [preview, setPreview] = useState("");
+
+  useEffect(() => {
+    if (originalImage) {
+      setPreview(originalImage);
+    }
+    setLoading(false);
+  }, [originalImage]);
 
   useEffect(() => {
     if (error) {
