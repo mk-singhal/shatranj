@@ -350,16 +350,25 @@ export default function BlogAdd() {
                         autoFocus
                         margin="dense"
                         id="name"
+                        required
                         value={dialogValue.title}
-                        InputProps={{
-                          readOnly: true,
+                        inputProps={{
+                          pattern: "^([A-Za-z0-9])[\\w.]{1,18}([A-Za-z0-9])$",
                         }}
-                        onChange={(event) =>
+                        onInvalid={event => {
+                          const target = event.target as HTMLInputElement;
+                          target.setCustomValidity("Enter a tag with 3-20 characters.\nOnly Alpha-numeric and underscores allowed.\nNo special-chars or spaces allowed."); 
+                        }}
+                        onInput={event => {
+                          const target = event.target as HTMLInputElement;
+                          target.setCustomValidity("");
+                        }}
+                        onChange={(event) => {
                           setDialogValue({
                             ...dialogValue,
                             title: event.target.value,
-                          })
-                        }
+                          });
+                        }}
                         label="Name"
                         type="text"
                         variant="standard"

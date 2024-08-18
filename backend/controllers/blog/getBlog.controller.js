@@ -1,44 +1,209 @@
 const { sq } = require("../../config/dbConn");
+const { Op } = require("sequelize");
 const { User, Blog, Tag, Reaction } = require("../../model/index");
 
 const getBlog = async (req, res) => {
   try {
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
-    const blogs = await Blog.findAll({
-      order: [["createdAt", "DESC"]],
+    const searchString = req.query.search;
+    const sort = req.query.sort;
+
+    const attributes = {
+      // count total likes & views for each blog
+      include: [
+        [
+          sq.literal(
+            '(SELECT COUNT(view) FROM reactions WHERE "blogId" = blog.id AND reactions.view = true)'
+          ),
+          "views",
+        ],
+        [
+          sq.literal(
+            '(SELECT COUNT("like") FROM reactions WHERE "blogId" = blog.id AND reactions."like" = true)'
+          ),
+          "likes",
+        ],
+      ],
+    };
+    const include = [
+      {
+        model: Tag,
+        as: "tag",
+        attributes: ["id", "name"],
+      },
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "username", "firstName", "lastName"],
+      },
+    ];
+    const blogOptions = {
       offset,
       limit,
-      attributes: {
-        // count total likes & views for each blog
-        include: [
-          [
-            sq.literal(
-              '(SELECT COUNT(view) FROM reactions WHERE "blogId" = blog.id AND reactions.view = true)'
-            ),
-            "views",
-          ],
-          [
-            sq.literal(
-              '(SELECT COUNT("like") FROM reactions WHERE "blogId" = blog.id AND reactions."like" = true)'
-            ),
-            "likes",
-          ],
+      attributes,
+      include,
+    };
+    // console.log(searchString, sort);
+    if (searchString != "" && sort != "" && sort === "likes") {
+      blogOptions.where = {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
         ],
-      },
+      };
+      blogOptions.order = [
+        ["likes", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (searchString != "" && sort != "" && sort === "views") {
+      blogOptions.where = {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
+        ],
+      };
+      blogOptions.ordder = [
+        ["views", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (searchString != "") {
+      blogOptions.where = {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
+        ],
+      };
+      blogOptions.order = [["createdAt", "DESC"]];
+    } else if (sort != "" && sort === "likes") {
+      blogOptions.order = [
+        ["likes", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (sort != "" && sort === "views") {
+      blogOptions.order = [
+        ["views", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else {
+      blogOptions.order = [["createdAt", "DESC"]];
+    }
+    const blogs = await Blog.findAll(blogOptions);
+    if (!blogs) {
+      return res.status(204).json({ message: "No Blogs found!" });
+    }
+    res.status(200).json({ blogs: blogs });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getMyBlog = async (req, res) => {
+  try {
+    const offset = parseInt(req.query.offset) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+    const searchString = req.query.search;
+    const sort = req.query.sort;
+
+    const attributes = {
+      // count total likes & views for each blog
       include: [
-        {
-          model: Tag,
-          as: "tag",
-          attributes: ["id", "name"],
-        },
-        {
-          model: User,
-          as: "user",
-          attributes: ["id", "username", "firstName", "lastName"],
-        },
+        [
+          sq.literal(
+            '(SELECT COUNT(view) FROM reactions WHERE "blogId" = blog.id AND reactions.view = true)'
+          ),
+          "views",
+        ],
+        [
+          sq.literal(
+            '(SELECT COUNT("like") FROM reactions WHERE "blogId" = blog.id AND reactions."like" = true)'
+          ),
+          "likes",
+        ],
       ],
-    });
+    };
+    const include = [
+      {
+        model: Tag,
+        as: "tag",
+        attributes: ["id", "name"],
+      },
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "username", "firstName", "lastName"],
+      },
+    ];
+    const blogOptions = {
+      offset,
+      limit,
+      attributes,
+      include,
+    };
+    if (searchString != "" && sort != "" && sort === "likes") {
+      blogOptions.where = {
+        "$user.email$": req.user,
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
+        ],
+      };
+      blogOptions.order = [
+        ["likes", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (searchString != "" && sort != "" && sort === "views") {
+      blogOptions.where = {
+        "$user.email$": req.user,
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
+        ],
+      };
+      blogOptions.ordder = [
+        ["views", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (searchString != "") {
+      blogOptions.where = {
+        "$user.email$": req.user,
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
+        ],
+      };
+      blogOptions.order = [["createdAt", "DESC"]];
+    } else if (sort != "" && sort === "likes") {
+      blogOptions.where = {
+        "$user.email$": req.user,
+      };
+      blogOptions.order = [
+        ["likes", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (sort != "" && sort === "views") {
+      blogOptions.where = {
+        "$user.email$": req.user,
+      };
+      blogOptions.order = [
+        ["views", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else {
+      blogOptions.where = {
+        "$user.email$": req.user,
+      };
+      blogOptions.order = [["createdAt", "DESC"]];
+    }
+
+    const blogs = await Blog.findAll(blogOptions);
     if (!blogs) {
       return res.status(204).json({ message: "No Blogs found!" });
     }
@@ -54,6 +219,9 @@ const getUserBlog = async (req, res) => {
     const username = req.params.username;
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
+    const searchString = req.query.search;
+    const sort = req.query.sort;
+
     if (!username) return res.status(400).json({ message: "Invalid username" });
     const user = await User.findOne({
       where: { username },
@@ -65,12 +233,14 @@ const getUserBlog = async (req, res) => {
       ],
     });
     if (!user) return res.status(400).json({ message: "User not found" });
+
     const [totalViews, _tv] = await sq.query(
       `SELECT count(view) FROM reactions 
         INNER JOIN blogs ON reactions."blogId" = blogs.id 
         where reactions.view = true 
         and blogs."userId" = ${user.id}`
     );
+
     const [totalLikes, _tl] = await sq.query(
       `SELECT count('like') FROM reactions 
         INNER JOIN blogs ON reactions."blogId" = blogs.id 
@@ -78,40 +248,90 @@ const getUserBlog = async (req, res) => {
         and blogs."userId" = ${user.id}`
     );
 
-    const blogs = await user.getBlog({
-      order: [["createdAt", "DESC"]],
+    const attributes = {
+      // count total likes & views for each blog
+      include: [
+        [
+          sq.literal(
+            '(SELECT COUNT(view) FROM reactions WHERE "blogId" = blog.id AND reactions.view = true)'
+          ),
+          "views",
+        ],
+        [
+          sq.literal(
+            '(SELECT COUNT("like") FROM reactions WHERE "blogId" = blog.id AND reactions."like" = true)'
+          ),
+          "likes",
+        ],
+      ],
+    };
+    const include = [
+      {
+        model: Tag,
+        as: "tag",
+        attributes: ["id", "name"],
+      },
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "username", "firstName", "lastName"],
+      },
+    ];
+    const blogOptions = {
       offset,
       limit,
-      attributes: {
-        // count total likes & views for each blog
-        include: [
-          [
-            sq.literal(
-              '(SELECT COUNT(view) FROM reactions WHERE "blogId" = blog.id AND reactions.view = true)'
-            ),
-            "views",
-          ],
-          [
-            sq.literal(
-              '(SELECT COUNT("like") FROM reactions WHERE "blogId" = blog.id AND reactions.like = true)'
-            ),
-            "likes",
-          ],
+      attributes,
+      include,
+    };
+    if (searchString != "" && sort != "" && sort === "likes") {
+      blogOptions.where = {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
         ],
-      },
-      include: [
-        {
-          model: Tag,
-          as: "tag",
-          attributes: ["id", "name"],
-        },
-        {
-          model: User,
-          as: "user",
-          attributes: ["id", "username", "firstName", "lastName"],
-        },
-      ],
-    });
+      };
+      blogOptions.order = [
+        ["likes", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (searchString != "" && sort != "" && sort === "views") {
+      blogOptions.where = {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
+        ],
+      };
+      blogOptions.ordder = [
+        ["views", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (searchString != "") {
+      blogOptions.where = {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
+        ],
+      };
+      blogOptions.order = [["createdAt", "DESC"]];
+    } else if (sort != "" && sort === "likes") {
+      blogOptions.order = [
+        ["likes", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (sort != "" && sort === "views") {
+      blogOptions.order = [
+        ["views", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else {
+      blogOptions.order = [["createdAt", "DESC"]];
+    }
+
+    // const blogs = await Blog.findAll(blogOptions);
+    const blogs = await user.getBlog(blogOptions);
     if (!blogs) {
       return res.status(204).json({ message: "No Blogs found!" });
     }
@@ -127,6 +347,9 @@ const getTagBlog = async (req, res) => {
     const tagName = req.params.tag;
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
+    const searchString = req.query.search;
+    const sort = req.query.sort;
+
     if (!tagName) return res.status(400).json({ message: "Invalid tag" });
     const tag = await Tag.findOne({
       where: { name: tagName },
@@ -137,18 +360,16 @@ const getTagBlog = async (req, res) => {
           attributes: ["username", "firstName", "lastName"],
         },
       ],
-      // attributes: [
-      //   // include: [
-      //   "id",
-      // ],
     });
     if (!tag) return res.status(400).json({ message: "Tag not found" });
+    
     const [totalViews, _tv] = await sq.query(
       `SELECT count(view) FROM reactions 
         INNER JOIN blogs ON reactions."blogId" = blogs.id 
         where reactions.view = true 
         and blogs."tagId" = ${tag.id}`
     );
+    
     const [totalLikes, _tl] = await sq.query(
       `SELECT count('like') FROM reactions 
         INNER JOIN blogs ON reactions."blogId" = blogs.id 
@@ -156,40 +377,89 @@ const getTagBlog = async (req, res) => {
         and blogs."tagId" = ${tag.id}`
     );
 
-    const blogs = await tag.getBlog({
-      order: [["createdAt", "DESC"]],
+    const attributes = {
+      // count total likes & views for each blog
+      include: [
+        [
+          sq.literal(
+            '(SELECT COUNT(view) FROM reactions WHERE "blogId" = blog.id AND reactions.view = true)'
+          ),
+          "views",
+        ],
+        [
+          sq.literal(
+            '(SELECT COUNT("like") FROM reactions WHERE "blogId" = blog.id AND reactions."like" = true)'
+          ),
+          "likes",
+        ],
+      ],
+    };
+    const include = [
+      {
+        model: Tag,
+        as: "tag",
+        attributes: ["id", "name"],
+      },
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "username", "firstName", "lastName"],
+      },
+    ];
+    const blogOptions = {
       offset,
       limit,
-      attributes: {
-        // count total likes & views for each blog
-        include: [
-          [
-            sq.literal(
-              '(SELECT COUNT(view) FROM reactions WHERE "blogId" = blog.id AND reactions.view = true)'
-            ),
-            "views",
-          ],
-          [
-            sq.literal(
-              '(SELECT COUNT("like") FROM reactions WHERE "blogId" = blog.id AND reactions.like = true)'
-            ),
-            "likes",
-          ],
+      attributes,
+      include,
+    };
+    if (searchString != "" && sort != "" && sort === "likes") {
+      blogOptions.where = {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
         ],
-      },
-      include: [
-        {
-          model: Tag,
-          as: "tag",
-          attributes: ["id", "name"],
-        },
-        {
-          model: User,
-          as: "user",
-          attributes: ["id", "username", "firstName", "lastName"],
-        },
-      ],
-    });
+      };
+      blogOptions.order = [
+        ["likes", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (searchString != "" && sort != "" && sort === "views") {
+      blogOptions.where = {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
+        ],
+      };
+      blogOptions.ordder = [
+        ["views", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (searchString != "") {
+      blogOptions.where = {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${searchString}%` } },
+          { content: { [Op.iLike]: `%${searchString}%` } },
+          { "$tag.name$": { [Op.iLike]: `%${searchString}%` } },
+        ],
+      };
+      blogOptions.order = [["createdAt", "DESC"]];
+    } else if (sort != "" && sort === "likes") {
+      blogOptions.order = [
+        ["likes", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else if (sort != "" && sort === "views") {
+      blogOptions.order = [
+        ["views", "DESC"],
+        ["createdAt", "DESC"],
+      ];
+    } else {
+      blogOptions.order = [["createdAt", "DESC"]];
+    }
+
+    const blogs = await tag.getBlog(blogOptions);
     if (!blogs) {
       return res.status(204).json({ message: "No Blogs found!" });
     }
@@ -267,15 +537,22 @@ const getBlogDetailForEdit = async (req, res) => {
       return res.status(204).json({ message: "No Blog found!" });
     }
     if (blog.user.email !== req.user) {
-      return res.status(403).json({ message: "You are not authorized to edit this blog" });
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to edit this blog" });
     }
-    res
-      .status(200)
-      .json({ blog: blog });
+    res.status(200).json({ blog: blog });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: error.message });
   }
 };
 
-module.exports = { getBlog, getUserBlog, getTagBlog, getBlogDetail, getBlogDetailForEdit };
+module.exports = {
+  getBlog,
+  getMyBlog,
+  getUserBlog,
+  getTagBlog,
+  getBlogDetail,
+  getBlogDetailForEdit,
+};

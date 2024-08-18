@@ -345,7 +345,7 @@ export default function BlogDetail() {
                       sx={{ ml: 1 }}
                       onClick={() => {
                         // console.log("Chip Clicked");
-                        navigate(`/blog/tag/primary`);
+                        navigate(`/blog/${blog?.tag.name}`);
                       }}
                       variant="outlined"
                     />

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { initialBoard } from "../../constants";
 import Chessboard from "../Chessboard/Chessboard";
-import "./Refree.css";
+import "./Referee.css";
 import { Board, Pawn, Piece, Position } from "../../models";
 import { PieceType, TeamType } from "../../Types";
 import useAxiosPrivate from "../../hooks/useAxiosPrivate";
@@ -19,7 +19,7 @@ export default function Referee() {
   const location = useLocation();
 
   useEffect(() => {
-    let isMounted = true;
+    // let isMounted = true;
     const controller = new AbortController();
 
     const getblogs = async () => {
@@ -38,7 +38,7 @@ export default function Referee() {
     getblogs();
 
     return () => {
-      isMounted = false;
+      // isMounted = false;
       controller.abort();
     };
   }, []);

@@ -16,6 +16,7 @@ import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
 import InputLabel from "@mui/material/InputLabel";
 import IconButton from "@mui/material/IconButton";
+import ClearIcon from "@mui/icons-material/Clear";
 import FormControl from "@mui/material/FormControl";
 import CardContent from "@mui/material/CardContent";
 import SearchIcon from "@mui/icons-material/Search";
@@ -23,7 +24,7 @@ import OutlinedInput from "@mui/material/OutlinedInput";
 import InputAdornment from "@mui/material/InputAdornment";
 import { useTheme } from "@mui/material/styles";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { useParams } from "react-router-dom";
+import { createSearchParams, useParams } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "../../api/axios";
 import { BlogType, TagType } from "../../Types";
@@ -37,15 +38,66 @@ export default function TagBlock() {
   const tagName = useParams().tag;
   const from = location.state?.from?.pathname || "/";
 
+  const searchString =
+    new URLSearchParams(useLocation().search).get("search") || "";
+  const sortBy = new URLSearchParams(useLocation().search).get("sort") || "";
+  React.useEffect(() => {
+    setSort(sortBy);
+    setSearch(searchString);
+    // console.log(searchString, sortBy);
+    setMoreContent(true);
+    setIndex(limit);
+  }, [searchString, sortBy]);
+
   const [tab, setTab] = React.useState("blog");
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setTab(newValue);
+  };
+
+  const handleSearchNSort = (sort = "", search = "") => {
+    if (search != "" && sort != "")
+      navigate({
+        search: createSearchParams({
+          search,
+          sort,
+        }).toString(),
+      });
+    else if (search != "")
+      navigate({
+        search: createSearchParams({
+          search,
+        }).toString(),
+      });
+    else if (sort != "")
+      navigate({
+        search: createSearchParams({
+          sort,
+        }).toString(),
+      });
+    else navigate(`/blog/${tagName}`);
+  };
+
+  // Sorting the blogs
+  const [search, setSearch] = React.useState("");
+  const handleSearch = () => {
+    setMoreContent(true);
+    setIndex(limit);
+    handleSearchNSort(sort, search);
+  };
+  const clearSearch = () => {
+    setSearch("");
+    setMoreContent(true);
+    setIndex(limit);
+    handleSearchNSort(sort, "");
   };
 
   // Sorting the blogs
   const [sort, setSort] = React.useState("");
   const handleSort = (event: SelectChangeEvent) => {
     setSort(event.target.value);
+    setMoreContent(true);
+    setIndex(limit);
+    handleSearchNSort(event.target.value, search);
   };
 
   // Fetching the User Blogs data
@@ -55,7 +107,7 @@ export default function TagBlock() {
   const getblogs = async () => {
     try {
       const response = await axios.get(
-        `/blog/tag/${tagName}?offset=0&limit=${limit}`
+        `/blog/tag/${tagName}?offset=0&limit=${limit}&search=${searchString}&sort=${sortBy}`
       );
       response.data?.blogs ? setBlogs(response.data.blogs) : setBlogs([]);
       response.data?.tag ? setTag(response.data.tag) : setTag(null);
@@ -88,7 +140,7 @@ export default function TagBlock() {
   };
   React.useEffect(() => {
     getblogs();
-  }, []);
+  }, [searchString, sortBy]);
 
   // Determining the height for the scrollable container
   const theme = useTheme();
@@ -111,7 +163,7 @@ export default function TagBlock() {
     setIsBlogLoading(true);
     try {
       const response = await axios.get(
-        `/blog/tag/${tagName}?offset=${index}&limit=${limit}`
+        `/blog/tag/${tagName}?offset=${index}&limit=${limit}&search=${searchString}&sort=${sortBy}`
       );
       response.data?.blogs?.length === limit
         ? setMoreContent(true)
@@ -203,14 +255,32 @@ export default function TagBlock() {
                 variant="outlined"
               >
                 <OutlinedInput
-                  placeholder="Type to Search"
+                  id="search"
+                  value={search}
+                  onKeyDownCapture={(e) => {
+                    e.key === "Enter" && handleSearch();
+                  }}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search"
                   endAdornment={
                     <InputAdornment position="end">
+                      {search !== "" && (
+                        <>
+                          <IconButton aria-label="search" onClick={clearSearch}>
+                            <ClearIcon color="warning" />
+                          </IconButton>
+                          <Divider
+                            sx={{ height: 28, m: 0.2 }}
+                            orientation="vertical"
+                          />
+                        </>
+                      )}
                       <IconButton
-                        aria-label="toggle password visibility"
+                        aria-label="search"
                         edge="end"
+                        onClick={handleSearch}
                       >
-                        <SearchIcon />
+                        <SearchIcon color="primary" />
                       </IconButton>
                     </InputAdornment>
                   }
@@ -315,7 +385,9 @@ export default function TagBlock() {
                                 label={blog.tag.name}
                                 color="primary"
                                 onClick={() => {
-                                  navigate(`/blog/${blog.tag.name}/${blog.slug}`);
+                                  navigate(
+                                    `/blog/${blog.tag.name}/${blog.slug}`
+                                  );
                                 }}
                                 variant="outlined"
                               />

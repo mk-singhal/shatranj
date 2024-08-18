@@ -1,7 +1,7 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import CssBaseline from "@mui/material/CssBaseline";
-import Refree from "./components/Refree/Refree";
+import Referee from "./components/Referee/Referee";
 import HomePage from "./components/HomePage/HomePage";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { deepOrange, grey } from "@mui/material/colors";
@@ -19,6 +19,7 @@ import BlogAdd from "./components/BlogAdd/BlogAdd";
 import UserBlog from "./components/UserBlog/UserBlog";
 import TagBlog from "./components/TagBlog/TagBlog";
 import BlogEdit from "./components/BlogEdit/BlogEdit";
+import YouVsOthers from "./components/YouVsOthers/YouVsOthers";
 
 const getDesignTokens = (mode: PaletteMode) => ({
   palette: {
@@ -123,7 +124,8 @@ function App() {
                   <Route path="/my-blog" element={<Blog />} />
                   <Route path="/blog/add" element={<BlogAdd />} />
                   <Route path="/blog/edit/:slug" element={<BlogEdit />} />
-                  <Route path="/game" element={<Refree />} />
+                  <Route path="/you-vs-others" element={<YouVsOthers />} />
+                  <Route path="/game" element={<Referee />} />
                 </Route>
                 {/* Catch all */}
                 <Route path="*" element={<Missing />} />

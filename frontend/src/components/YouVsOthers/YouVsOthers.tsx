@@ -1,132 +1,13 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Tab from "@mui/material/Tab";
-import Fab from "@mui/material/Fab";
-import Tabs from "@mui/material/Tabs";
 import Grid from "@mui/material/Grid";
-import Card from "@mui/material/Card";
-import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
-import Divider from "@mui/material/Divider";
-import SvgIcon from "@mui/material/SvgIcon";
-import MenuItem from "@mui/material/MenuItem";
-import AddIcon from "@mui/icons-material/Add";
-import CardMedia from "@mui/material/CardMedia";
 import Typography from "@mui/material/Typography";
-import InputLabel from "@mui/material/InputLabel";
-import IconButton from "@mui/material/IconButton";
-import ClearIcon from "@mui/icons-material/Clear";
-import FormControl from "@mui/material/FormControl";
-import CardContent from "@mui/material/CardContent";
-import SearchIcon from "@mui/icons-material/Search";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputAdornment from "@mui/material/InputAdornment";
 import { useTheme } from "@mui/material/styles";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { createSearchParams, Link as RouterLink } from "react-router-dom";
-import { useLocation, useNavigate } from "react-router-dom";
-import axios, { axiosPrivateInstance } from "../../api/axios";
-import { BlogType } from "../../Types";
-import CircularProgress from "@mui/material/CircularProgress";
-import useAxiosPrivate from "../../hooks/useAxiosPrivate";
+import Referee from "../Referee/Referee";
 
-const limit = 3;
 
-export default function Blog() {
-  const navigate = useNavigate();
-  const axoiosPrivate = useAxiosPrivate(axiosPrivateInstance);
-
-  const searchString =
-    new URLSearchParams(useLocation().search).get("search") || "";
-  const sortBy = new URLSearchParams(useLocation().search).get("sort") || "";
-  React.useEffect(() => {
-    setSort(sortBy);
-    setSearch(searchString);
-    // console.log(searchString, sortBy);
-    setMoreContent(true);
-    setIndex(limit);
-  }, [searchString, sortBy]);
-
-  // Selecting the tab based on the route
-  let location = useLocation();
-  const route = ["/blog", "/my-blog"];
-  const [tab, setTab] = React.useState(
-    location.pathname === route[0] ? "one" : "two"
-  );
-  const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
-    setTab(newValue);
-  };
-
-  const handleSearchNSort = (sort = "", search = "") => {
-    if (search != "" && sort != "")
-      navigate({
-        search: createSearchParams({
-          search,
-          sort,
-        }).toString(),
-      });
-    else if (search != "")
-      navigate({
-        search: createSearchParams({
-          search,
-        }).toString(),
-      });
-    else if (sort != "")
-      navigate({
-        search: createSearchParams({
-          sort,
-        }).toString(),
-      });
-    else navigate(location.pathname);
-  };
-
-  // Sorting the blogs
-  const [search, setSearch] = React.useState("");
-  const handleSearch = () => {
-    setMoreContent(true);
-    setIndex(limit);
-    handleSearchNSort(sort, search);
-  };
-  const clearSearch = () => {
-    setSearch("");
-    setMoreContent(true);
-    setIndex(limit);
-    handleSearchNSort(sort, "");
-  };
-
-  // Sorting the blogs
-  const [sort, setSort] = React.useState("");
-  const handleSort = (event: SelectChangeEvent) => {
-    setSort(event.target.value);
-    setMoreContent(true);
-    setIndex(limit);
-    handleSearchNSort(event.target.value, search);
-  };
-
-  // Fetching the blogs
-  const [blogs, setBlogs] = React.useState<BlogType[] | null>(null);
-  const getblogs = async () => {
-    try {
-      var response;
-      if (tab === "two") {
-        response = await axoiosPrivate.get(
-          `/my-blog?offset=0&limit=${limit}&search=${searchString}&sort=${sortBy}`
-        );
-      } else {
-        response = await axios.get(
-          `/blog?offset=0&limit=${limit}&search=${searchString}&sort=${sortBy}`
-        );
-      }
-      response.data.blogs.length === 0
-        ? setBlogs(null)
-        : setBlogs(response.data.blogs);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  React.useEffect(() => {
-    getblogs();
-  }, [searchString, sortBy]);
+export default function YouVsOthers() {
+  // const navigate = useNavigate();
 
   // Determining the height for the scrollable container
   const theme = useTheme();
@@ -138,62 +19,7 @@ export default function Blog() {
     }
   }, []);
 
-  // Infinite scroll
-  const loaderRef = React.useRef<HTMLDivElement>(null);
-  const [moreContent, setMoreContent] = React.useState(true);
-  const [isBlogLoading, setIsBlogLoading] = React.useState(false);
-  const [index, setIndex] = React.useState(limit);
-  const fetchBlogs = React.useCallback(async () => {
-    // console.log(isBlogLoading, !moreContent);
-    if (isBlogLoading || !moreContent) return;
 
-    setIsBlogLoading(true);
-    try {
-      var response: any;
-      if (tab === "two") {
-        response = await axoiosPrivate.get(
-          `/my-blog?offset=${index}&limit=${limit}&search=${searchString}&sort=${sortBy}`
-        );
-      } else {
-        response = await axios.get(
-          `/blog?offset=${index}&limit=${limit}&search=${searchString}&sort=${sortBy}`
-        );
-      }
-      response.data.blogs.length === limit
-        ? setMoreContent(true)
-        : setMoreContent(false);
-      response.data.blogs.length === 0
-        ? setIsBlogLoading(false)
-        : setBlogs((prevItems) => {
-            if (prevItems) return [...prevItems, ...response.data.blogs];
-            getblogs();
-            return [...response.data.blogs];
-          });
-    } catch (error) {
-      setMoreContent(false);
-      console.log(error);
-    }
-    setIndex((prevIndex) => prevIndex + limit);
-    setIsBlogLoading(false);
-  }, [index, isBlogLoading]);
-  React.useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      const target = entries[0];
-      if (target.isIntersecting) {
-        fetchBlogs();
-      }
-    });
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
-    return () => {
-      if (loaderRef.current) {
-        observer.unobserve(loaderRef.current);
-      }
-    };
-  }, [fetchBlogs]);
 
   return (
     <Box
@@ -209,9 +35,9 @@ export default function Blog() {
     >
       <Grid container ref={targetRef}>
         <Grid item xs={12}>
-          <Typography variant="h4">Blogs</Typography>
+          <Typography variant="h4">You Vs Others</Typography>
         </Grid>
-        <Grid item xs={12} md={6}>
+        {/* <Grid item xs={12} md={6}>
           <Tabs value={tab} onChange={handleChange} aria-label="Tabs for blogs">
             <Tab
               value="one"
@@ -300,25 +126,28 @@ export default function Blog() {
               </Select>
             </FormControl>
           </Stack>
-        </Grid>
+        </Grid> */}
       </Grid>
       <Grid container>
         <Grid item xs={12} pt={1}>
           <Box
             sx={{
-              maxHeight: {
-                xs: `calc(100vh - ${theme.spacing(
-                  3
-                )} - ${targetRefHeight}px - 56px)`,
-                sm: `calc(100vh - ${theme.spacing(
-                  3
-                )} - ${targetRefHeight}px - 64px)`,
-                md: `calc(100vh - ${theme.spacing(5)} - ${targetRefHeight}px)`,
-              },
-              overflowY: "auto",
+              // height: {
+              //   xs: `calc(100vh - ${theme.spacing(
+              //     3
+              //   )} - ${targetRefHeight}px - 56px)`,
+              //   sm: `calc(100vh - ${theme.spacing(
+              //     3
+              //   )} - ${targetRefHeight}px - 64px)`,
+              //   md: `calc(100vh - ${theme.spacing(5)} - ${targetRefHeight}px)`,
+              // },
+              // overflowY: "auto",
+              height: "100vh",
+              // width: "100%",
             }}
           >
-            {!blogs && <Typography variant="h6">No Blog present</Typography>}
+            <Referee />
+            {/* {!blogs && <Typography variant="h6">No Blog present</Typography>}
             {blogs &&
               blogs.map((blog) => (
                 <div key={blog.id}>
@@ -526,17 +355,17 @@ export default function Blog() {
               ))}
             <Box sx={{ minHeight: "10px" }} ref={loaderRef}>
               {isBlogLoading && moreContent && <CircularProgress />}
-            </Box>
+            </Box> */}
           </Box>
         </Grid>
       </Grid>
-      <Fab
+      {/* <Fab
         aria-label="edit"
         onClick={() => navigate("/blog/add")}
         sx={{ position: "absolute", bottom: 20, right: 40 }}
       >
         <AddIcon />
-      </Fab>
+      </Fab> */}
     </Box>
   );
 }

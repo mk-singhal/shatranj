@@ -42,8 +42,9 @@ app.use("/blog", require("./routes/viewBlog"));
 app.use(verifyJWT);
 
 // routes only for authenticated users
-app.use("/blog", require("./routes/blog"));
 app.use("/tag", require("./routes/tag"));
+app.use("/blog", require("./routes/blog"));
+app.use("/my-blog", require("./routes/myblog"));
 
 app.all("*", (req, res) => {
   res.status(404);
